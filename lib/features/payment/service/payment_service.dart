@@ -185,7 +185,7 @@ class PaymentService {
     }
   }
 
-  Future<bool> verifyPaymentStatus(String inquiryNumber) async {
+Future<bool> verifyPaymentStatus(String inquiryNumber) async {
   try {
     final box = Hive.box('settings');
     String? token = await box.get('token');
@@ -194,8 +194,7 @@ class PaymentService {
       throw Exception("Authentication token not found");
     }
 
-    // If your backend provides an endpoint to fetch inquiry by number, use it
-      final url = '$myInquiriesApiUrl?inquiry_number=$inquiryNumber';
+    final url = '$myInquiriesApiUrl?inquiry_number=$inquiryNumber';
 
     final response = await http.get(
       Uri.parse(url),
@@ -209,8 +208,10 @@ class PaymentService {
       final data = jsonDecode(response.body);
 
       if (data['error_code'] == "0" && data['data'] != null) {
-        // Return true only if payment_successfull is true
-        return data['data']['payment_successfull'] == true;
+        final inquiries = data['data']['inquiries'] as List;
+        if (inquiries.isNotEmpty) {
+          return inquiries[0]['payment_successfull'] == true;
+        }
       }
     }
 
@@ -220,6 +221,7 @@ class PaymentService {
     return false;
   }
 }
+
 
 }
 

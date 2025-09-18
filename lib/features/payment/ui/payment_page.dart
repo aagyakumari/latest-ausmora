@@ -231,48 +231,48 @@ class _PaymentPageState extends State<PaymentPage> {
     );
   }
 
-  // / Handle Stripe payment (both card and Google Pay)
-  Future<void> _handleStripePayment(String paymentMethod) async {
-    setState(() {
-      _isProcessing = true;
-      _errorMessage = null;
-    });
+  // // / Handle Stripe payment (both card and Google Pay)
+  // Future<void> _handleStripePayment(String paymentMethod) async {
+  //   setState(() {
+  //     _isProcessing = true;
+  //     _errorMessage = null;
+  //   });
 
-    try {
-      final String? stripeSessionId = widget.clientSecret;
-      final String? inquiryNumber = widget.inquiryNumber;
-      print("Stripe Session ID: $stripeSessionId"); // 👈 This will print it to console
-      print("Inquiry Number: $inquiryNumber");
+  //   try {
+  //     final String? stripeSessionId = widget.clientSecret;
+  //     final String? inquiryNumber = widget.inquiryNumber;
+  //     print("Stripe Session ID: $stripeSessionId"); // 👈 This will print it to console
+  //     print("Inquiry Number: $inquiryNumber");
 
-      if (stripeSessionId == null) {
-        throw Exception('Payment cannot proceed: missing client secret.');
-      }
+  //     if (stripeSessionId == null) {
+  //       throw Exception('Payment cannot proceed: missing client secret.');
+  //     }
 
-      // Step 1 (already done upstream): Inquiry created and client secret provided
-      // Step 2: Process payment with Stripe using the provided session ID
-      final paymentResult = await widget._paymentService.processStripePayment(
-        stripeSessionId: stripeSessionId,
-        paymentMethod: paymentMethod,
-      );
+  //     // Step 1 (already done upstream): Inquiry created and client secret provided
+  //     // Step 2: Process payment with Stripe using the provided session ID
+  //     final paymentResult = await widget._paymentService.processStripePayment(
+  //       stripeSessionId: stripeSessionId,
+  //       paymentMethod: paymentMethod,
+  //     );
 
-      if (paymentResult['success']) {
-        // Payment successful
-        if (inquiryNumber != null) {
-          _showSuccessDialog(inquiryNumber);
-        } else {
-          _showSuccessDialog('');
-        }
-      } else {
-        throw Exception(paymentResult['error']);
-      }
-    } catch (e) {
-      _showError('Payment failed: ${e.toString()}');
-    } finally {
-      setState(() {
-        _isProcessing = false;
-      });
-    }
-  }
+  //     if (paymentResult['success']) {
+  //       // Payment successful
+  //       if (inquiryNumber != null) {
+  //         _showSuccessDialog(inquiryNumber);
+  //       } else {
+  //         _showSuccessDialog('');
+  //       }
+  //     } else {
+  //       throw Exception(paymentResult['error']);
+  //     }
+  //   } catch (e) {
+  //     _showError('Payment failed: ${e.toString()}');
+  //   } finally {
+  //     setState(() {
+  //       _isProcessing = false;
+  //     });
+  //   }
+  // }
 
   /// Handle Stripe payment (both card and Google Pay)
 // Future<void> _handleStripePayment(String paymentMethod) async {
@@ -322,63 +322,65 @@ class _PaymentPageState extends State<PaymentPage> {
 //   }
 // }
 
-// /// Handle Stripe payment (both card and Google Pay) with backend verification polling
-// Future<void> _handleStripePayment(String paymentMethod) async {
-//   setState(() {
-//     _isProcessing = true;
-//     _errorMessage = null;
-//   });
 
-//   try {
-//     final String? stripeSessionId = widget.clientSecret;
-//     final String? inquiryNumber = widget.inquiryNumber;
 
-//     if (stripeSessionId == null) {
-//       throw Exception('Payment cannot proceed: missing client secret.');
-//     }
+/// Handle Stripe payment (both card and Google Pay) with backend verification polling
+Future<void> _handleStripePayment(String paymentMethod) async {
+  setState(() {
+    _isProcessing = true;
+    _errorMessage = null;
+  });
 
-//     // Step 1: Process payment with Stripe
-//     final paymentResult = await widget._paymentService.processStripePayment(
-//       stripeSessionId: stripeSessionId,
-//       paymentMethod: paymentMethod,
-//     );
+  try {
+    final String? stripeSessionId = widget.clientSecret;
+    final String? inquiryNumber = widget.inquiryNumber;
 
-//     if (!paymentResult['success']) {
-//       throw Exception(paymentResult['error']);
-//     }
+    if (stripeSessionId == null) {
+      throw Exception('Payment cannot proceed: missing client secret.');
+    }
 
-//     // Step 2: Poll backend to verify payment
-//     if (inquiryNumber == null || inquiryNumber.isEmpty) {
-//       _showError('Missing inquiry number. Cannot verify payment.');
-//       return;
-//     }
+    // Step 1: Process payment with Stripe
+    final paymentResult = await widget._paymentService.processStripePayment(
+      stripeSessionId: stripeSessionId,
+      paymentMethod: paymentMethod,
+    );
 
-//     bool isVerified = false;
-//     int attempts = 0;
-//     const int maxAttempts = 5; // Try 5 times
-//     const Duration delayBetweenAttempts = Duration(seconds: 2);
+    if (!paymentResult['success']) {
+      throw Exception(paymentResult['error']);
+    }
 
-//     while (!isVerified && attempts < maxAttempts) {
-//       isVerified = await widget._paymentService.verifyPaymentStatus(inquiryNumber);
-//       if (!isVerified) {
-//         await Future.delayed(delayBetweenAttempts);
-//         attempts++;
-//       }
-//     }
+    // Step 2: Poll backend to verify payment
+    if (inquiryNumber == null || inquiryNumber.isEmpty) {
+      _showError('Missing inquiry number. Cannot verify payment.');
+      return;
+    }
 
-//     if (isVerified) {
-//       _showSuccessDialog(inquiryNumber);
-//     } else {
-//       _showError('Payment could not be verified. Please contact support.');
-//     }
-//   } catch (e) {
-//     _showError('Payment failed: ${e.toString()}');
-//   } finally {
-//     setState(() {
-//       _isProcessing = false;
-//     });
-//   }
-// }
+    bool isVerified = false;
+    int attempts = 0;
+    const int maxAttempts = 5; // Try 5 times
+    const Duration delayBetweenAttempts = Duration(seconds: 2);
+
+    while (!isVerified && attempts < maxAttempts) {
+      isVerified = await widget._paymentService.verifyPaymentStatus(inquiryNumber);
+      if (!isVerified) {
+        await Future.delayed(delayBetweenAttempts);
+        attempts++;
+      }
+    }
+
+    if (isVerified) {
+      _showSuccessDialog(inquiryNumber);
+    } else {
+      _showError('Payment could not be verified. Please contact support.');
+    }
+  } catch (e) {
+    _showError('Payment failed: ${e.toString()}');
+  } finally {
+    setState(() {
+      _isProcessing = false;
+    });
+  }
+}
 
 
 

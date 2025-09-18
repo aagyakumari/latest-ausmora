@@ -24,64 +24,69 @@ class _InboxPageState extends State<InboxPage> {
   String _searchText = '';
 
   Future<List<dynamic>> _fetchInquiries() async {
-  try {
-    final box = Hive.box('settings');
-    String? token = await box.get('token');
+    try {
+      final box = Hive.box('settings');
+      String? token = await box.get('token');
 
-    if (token == null) {
-      throw Exception('Token is not available');
-    }
+      if (token == null) {
+        throw Exception('Token is not available');
+      }
 
-    const url =
-        'https://genzrev.com/api/frontend/GuestInquiry/MyInquiries';
+      const url = 'https://genzrev.com/api/frontend/GuestInquiry/MyInquiries';
 
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
-    );
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      var responseData = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        var responseData = jsonDecode(response.body);
 
-      if (responseData['error_code'] == "0") {
-        var inquiries = responseData['data']['inquiries'];
-        if (inquiries is List) {
-          // Sort inquiries by final_reading_on (non-null values first, then by date)
-          inquiries.sort((a, b) {
-            final aReading = a['final_reading_on'];
-            final bReading = b['final_reading_on'];
+        if (responseData['error_code'] == "0") {
+          var inquiries = responseData['data']['inquiries'];
+          if (inquiries is List) {
+            // Filter only inquiries with payment_successfull == true
+            inquiries = inquiries
+                .where((inquiry) => inquiry['payment_successfull'] == true)
+                .toList();
 
-            if (aReading == null && bReading == null) {
-              return 0; // Both are null, keep their order unchanged
-            } else if (aReading == null) {
-              return 1; // Push nulls to the bottom
-            } else if (bReading == null) {
-              return -1; // Bring non-nulls to the top
-            } else {
-              // Both are non-null, compare as DateTime
-              DateTime aDateTime = DateTime.parse(aReading); 
-              DateTime bDateTime = DateTime.parse(bReading);
-              return bDateTime.compareTo(aDateTime); // Latest first
-            }
-          });
+            inquiries.sort((a, b) {
+              // 1️⃣ Replied inquiries first
+              bool aReplied = a['is_replied'] ?? false;
+              bool bReplied = b['is_replied'] ?? false;
 
-          return inquiries;
+              if (aReplied && !bReplied) return -1;
+              if (!aReplied && bReplied) return 1;
+
+              // 2️⃣ Sort by final_reading_on or fallback to purchased_on
+              String? aDateStr = a['final_reading_on'] ?? a['purchased_on'];
+              String? bDateStr = b['final_reading_on'] ?? b['purchased_on'];
+
+              DateTime aDate = DateTime.parse(aDateStr!);
+              DateTime bDate = DateTime.parse(bDateStr!);
+
+              return bDate.compareTo(aDate); // Latest first
+            });
+
+            return inquiries;
+          } else {
+            throw Exception(
+                'Unexpected response format: inquiries is not a list');
+          }
         } else {
-          throw Exception('Unexpected response format: inquiries is not a list');
+          throw Exception('Error: ${responseData['message']}');
         }
       } else {
-        throw Exception('Error: ${responseData['message']}');
+        throw Exception(
+            'Failed to load inquiries: HTTP ${response.statusCode}');
       }
-    } else {
-      throw Exception('Failed to load inquiries: HTTP ${response.statusCode}');
+    } catch (e) {
+      print('Error fetching inquiries: $e');
+      return [];
     }
-  } catch (e) {
-    print('Error fetching inquiries: $e');
-    return [];
   }
-}
 
   Future<void> _markAsRead(String inquiryId) async {
     try {
@@ -228,34 +233,34 @@ class _InboxPageState extends State<InboxPage> {
                 rightIcon: Icons.help, // Icon for the right side
               ),
 
-             Padding(
-  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
-  child: TextField(
-    controller: _searchController,
-    onChanged: (value) {
-      setState(() {
-        _searchText = value;
-      });
-    },
-    decoration: InputDecoration(
-      hintText: 'Search inquiries...',
-      hintStyle: TextStyle(
-        fontSize: screenWidth * 0.035,
-      ),
-      prefixIcon: const Icon(Icons.search, color: Color(0xFFFF9933)),
-      enabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Color(0xFFFF9933)),
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Color(0xFFFF9933), width: 1.9),
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-    ),
-  ),
-),
-
-
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.02),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (value) {
+                    setState(() {
+                      _searchText = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Search inquiries...',
+                    hintStyle: TextStyle(
+                      fontSize: screenWidth * 0.035,
+                    ),
+                    prefixIcon:
+                        const Icon(Icons.search, color: Color(0xFFFF9933)),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFFFF9933)),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Color(0xFFFF9933), width: 1.9),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                ),
+              ),
 
               // FutureBuilder for inquiries
               Expanded(
@@ -300,145 +305,150 @@ class _InboxPageState extends State<InboxPage> {
         ));
   }
 
- Widget _buildInquiryCard(
-    dynamic inquiry, int index, double screenHeight, double screenWidth) {
-  bool isRead = inquiry['is_read'] ?? false;
-  bool isReplied = inquiry['is_replied'] ?? false;
-  int categoryTypeId = inquiry['category_type_id'] ?? 0;
-  String categoryName = _getCategoryName(categoryTypeId);
+  Widget _buildInquiryCard(
+      dynamic inquiry, int index, double screenHeight, double screenWidth) {
+    bool isRead = inquiry['is_read'] ?? false;
+    bool isReplied = inquiry['is_replied'] ?? false;
+    int categoryTypeId = inquiry['category_type_id'] ?? 0;
+    String categoryName = _getCategoryName(categoryTypeId);
 
-  // Map category_type_id to logo images
-  String getLogo(int categoryTypeId) {
-    switch (categoryTypeId) {
-      case 1:
-        return 'assets/images/horoscope2.png';
-      case 2:
-        return 'assets/images/compatibility2.png';
-      case 3:
-        return 'assets/images/auspicious2.png';
-      case 4:
-        return 'assets/images/kundali2.png';
-      case 5:
-        return 'assets/images/support2.png';
-      case 6:
-        return 'assets/images/aak.png';
-      default:
-        return 'assets/images/default.png'; // Fallback for unknown categories
+    // Map category_type_id to logo images
+    String getLogo(int categoryTypeId) {
+      switch (categoryTypeId) {
+        case 1:
+          return 'assets/images/horoscope2.png';
+        case 2:
+          return 'assets/images/compatibility2.png';
+        case 3:
+          return 'assets/images/auspicious2.png';
+        case 4:
+          return 'assets/images/kundali2.png';
+        case 5:
+          return 'assets/images/support2.png';
+        case 6:
+          return 'assets/images/aak.png';
+        default:
+          return 'assets/images/default.png'; // Fallback for unknown categories
+      }
     }
-  }
 
-  // Calculate responsive font sizes
-  double titleFontSize = screenWidth * 0.025; // 2.5% of the screen width
-  double subtitleFontSize = screenWidth * 0.02; // 2% of the screen width
-  double logoSize = screenWidth * 0.08; // 8% of the screen width
+    // Calculate responsive font sizes
+    double titleFontSize = screenWidth * 0.025; // 2.5% of the screen width
+    double subtitleFontSize = screenWidth * 0.02; // 2% of the screen width
+    double logoSize = screenWidth * 0.08; // 8% of the screen width
 
-  return Column(
-    children: [
-      InkWell(
-        onTap: () async {
-          await _markAsRead(inquiry['inquiry_id']);
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ChatBoxPage(
-                inquiry: inquiry,
-                inquiryId: inquiry['inquiry_id'],
+    return Column(
+      children: [
+        InkWell(
+          onTap: () async {
+            await _markAsRead(inquiry['inquiry_id']);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ChatBoxPage(
+                  inquiry: inquiry,
+                  inquiryId: inquiry['inquiry_id'],
+                ),
               ),
+            );
+            setState(() {
+              _selectedInquiryIndex = index;
+            });
+          },
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+                vertical: screenHeight * 0.015, horizontal: screenWidth * 0.05),
+            child: Row(
+              crossAxisAlignment:
+                  CrossAxisAlignment.center, // Ensures vertical alignment
+              children: [
+                // Placeholder for the unread dot (ensures alignment for read inquiries)
+                Container(
+                  height: screenWidth * 0.02, // Small dot size
+                  width: screenWidth * 0.02,
+                  decoration: BoxDecoration(
+                    color: !isRead ? Colors.orange : Colors.transparent,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                SizedBox(
+                    width: screenWidth * 0.03), // Space between dot and logo
+                // Logo next to the dot
+                Image.asset(
+                  getLogo(categoryTypeId),
+                  height: logoSize,
+                  width: logoSize,
+                ),
+                SizedBox(
+                    width: screenWidth * 0.03), // Space between logo and text
+                // Inquiry details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$categoryName : ${inquiry['question']}',
+                        style: TextStyle(
+                          fontSize: titleFontSize,
+                          fontWeight:
+                              isRead ? FontWeight.normal : FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(
+                          height:
+                              4), // Small spacing between title and subtitle
+                      Text(
+                        'Purchased on: ${inquiry['purchased_on']}',
+                        style: TextStyle(
+                          fontSize: subtitleFontSize,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      Text(
+                        'Price: \$${inquiry['price']}',
+                        style: TextStyle(
+                          fontSize: subtitleFontSize,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Status icon for "replied/pending"
+                Container(
+                  height: screenWidth * 0.04, // Icon container size
+                  width: screenWidth * 0.04,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: isReplied ? const Color(0xFFFF9933) : null,
+                    shape: BoxShape.circle,
+                  ),
+                  child: isReplied
+                      ? Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: screenWidth * 0.03,
+                        )
+                      : Icon(
+                          Icons.hourglass_empty,
+                          color: Colors.orange,
+                          size: screenWidth * 0.04,
+                        ),
+                ),
+              ],
             ),
-          );
-          setState(() {
-            _selectedInquiryIndex = index;
-          });
-        },
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-              vertical: screenHeight * 0.015, horizontal: screenWidth * 0.05),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center, // Ensures vertical alignment
-            children: [
-              // Placeholder for the unread dot (ensures alignment for read inquiries)
-              Container(
-                height: screenWidth * 0.02, // Small dot size
-                width: screenWidth * 0.02,
-                decoration: BoxDecoration(
-                  color: !isRead ? Colors.orange : Colors.transparent,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              SizedBox(width: screenWidth * 0.03), // Space between dot and logo
-              // Logo next to the dot
-              Image.asset(
-                getLogo(categoryTypeId),
-                height: logoSize,
-                width: logoSize,
-              ),
-              SizedBox(width: screenWidth * 0.03), // Space between logo and text
-              // Inquiry details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$categoryName : ${inquiry['question']}',
-                      style: TextStyle(
-                        fontSize: titleFontSize,
-                        fontWeight:
-                            isRead ? FontWeight.normal : FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4), // Small spacing between title and subtitle
-                    Text(
-                      'Purchased on: ${inquiry['purchased_on']}',
-                      style: TextStyle(
-                        fontSize: subtitleFontSize,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                    Text(
-                      'Price: \$${inquiry['price']}',
-                      style: TextStyle(
-                        fontSize: subtitleFontSize,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Status icon for "replied/pending"
-              Container(
-                height: screenWidth * 0.04, // Icon container size
-                width: screenWidth * 0.04,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: isReplied ? const Color(0xFFFF9933) : null,
-                  shape: BoxShape.circle,
-                ),
-                child: isReplied
-                    ? Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: screenWidth * 0.03,
-                      )
-                    : Icon(
-                        Icons.hourglass_empty,
-                        color: Colors.orange,
-                        size: screenWidth * 0.04,
-                      ),
-              ),
-            ],
           ),
         ),
-      ),
-      // Divider to separate inquiries
-      Divider(
-        color: Colors.grey[300], // Subtle line color
-        thickness: 1, // Line thickness
-        indent: screenWidth * 0.05, // Start of the line
-        endIndent: screenWidth * 0.05, // End of the line
-      ),
-    ],
-  );
-}
+        // Divider to separate inquiries
+        Divider(
+          color: Colors.grey[300], // Subtle line color
+          thickness: 1, // Line thickness
+          indent: screenWidth * 0.05, // Start of the line
+          endIndent: screenWidth * 0.05, // End of the line
+        ),
+      ],
+    );
+  }
 }
