@@ -1,0 +1,12 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
+
+
+    <application
+        android:label="Ausmora Dev"
+        tools:replace="android:label"
+        android:icon="@mipmap/ic_launcher">
+        <!-- Nothing else here because we inherit from main -->
+    </application>
+
+</manifest>
