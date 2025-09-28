@@ -1,10 +1,11 @@
+import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/features/profile/model/profile_model.dart';
 import 'package:flutter_application_1/hive/hive_service.dart'; // Assuming this is where you're storing the token
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ProfileServices {
-  static const String _getProfileUrl = 'https://genzrev.com/api/frontend/Guests/Get';
+  static  String _getProfileUrl = '$baseApiUrl/Guests/Get';
 
   // Method to fetch the user's profile
   static Future<ProfileModel?> getProfile() async {

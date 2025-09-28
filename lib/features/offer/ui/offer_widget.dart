@@ -34,15 +34,21 @@ class _OfferWidgetState extends State<OfferWidget> {
           if (widget.offer == null) return;
 
           Widget destinationPage;
-          switch (widget.offer!.categoryTypeId) { // Use categoryTypeId instead
+          switch (widget.offer!.categoryTypeId) {
             case 1:
-              destinationPage = HoroscopePage(showBundleQuestions: true);
+              destinationPage = HoroscopePage(
+                showBundleQuestions: true,
+              );
               break;
             case 2:
-              destinationPage = CompatibilityPage2(showBundleQuestions:true);
+              destinationPage = CompatibilityPage2(
+                showBundleQuestions: true,
+              );
               break;
             case 3:
-              destinationPage = AuspiciousTimePage(showBundleQuestions:true);
+              destinationPage = AuspiciousTimePage(
+                showBundleQuestions: true,
+              );
               break;
             default:
               destinationPage = DashboardPage();

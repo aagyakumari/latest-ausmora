@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/features/profile/model/profile_model.dart';
 import 'package:flutter_application_1/features/sign_up/repo/sign_up_repo.dart';
 import 'package:flutter_application_1/features/updateprofile/update_profile_service.dart';
@@ -38,6 +39,7 @@ class _ProfileDetailsState extends State<ProfileDetails> {
   final TextEditingController _dobController = TextEditingController();
   final TextEditingController _tobController = TextEditingController();
   final TextEditingController _tzController = TextEditingController();
+  final TextEditingController _genderController = TextEditingController();
 
 
   bool _isExpanded = false;
@@ -52,7 +54,7 @@ class _ProfileDetailsState extends State<ProfileDetails> {
   try {
     final box = Hive.box('settings');
     String? token = await box.get('token');
-    String url = 'https://genzrev.com/api/frontend/Guests/Get';
+    String url = '$baseApiUrl/Guests/Get';
 
     final response = await http.get(
       Uri.parse(url),
@@ -74,6 +76,7 @@ class _ProfileDetailsState extends State<ProfileDetails> {
           _nameController.text = _profileData!['name'] ?? '';
           _dobController.text = _profileData!['dob'] ?? '';
           _tobController.text = _profileData!['tob'] ?? '';
+          _genderController.text = _profileData!['gender'] ?? '';
 
           // ✅ Extract city name & country
           var cityData = _profileData!['city'];
@@ -151,7 +154,8 @@ void _updateProfile() async {
     cityId, // ✅ Use cityId instead of city name
     _dobController.text, 
     _tobController.text,
-    tzValue, // ✅ Use selectedTzValue for time zone
+    tzValue,
+    _genderController.text, // ✅ Use selectedTzValue for time zone
   );
 
   if (success) {
@@ -207,7 +211,7 @@ Future<void> _selectTime(BuildContext context) async {
 }
 
 Future<String?> _getCityId(String cityName) async {
-  final url = Uri.parse('https://genzrev.com/api/frontend/Guests/SearchCity?search_param=$cityName');
+  final url = Uri.parse('$baseApiUrl/Guests/SearchCity?search_param=$cityName');
 
   try {
     final response = await http.get(url);
@@ -305,6 +309,9 @@ Widget _buildProfileUI(double fontSize, double spacing, double screenWidth, doub
       children: [
         _buildTextField('Name', _nameController, Icons.person, _isEditing, fontSize),
         SizedBox(height: spacing),
+
+         _buildTextField('Gender', _genderController, Icons.person, _isEditing, fontSize),
+        SizedBox(height: spacing), 
 
         // Conditionally display City selection field when editing
         _isEditing

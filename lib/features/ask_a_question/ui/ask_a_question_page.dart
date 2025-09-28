@@ -249,7 +249,7 @@ class _AskQuestionPageState extends State<AskQuestionPage> {
             ],
           ),
           bottomNavigationBar: BottomNavBar(
-              screenWidth: screenWidth, screenHeight: screenHeight),
+              screenWidth: screenWidth, screenHeight: screenHeight, currentPageIndex: null),
         ));
   }
 

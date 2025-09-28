@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/features/dashboard/ui/dashboard_page.dart';
 import 'package:flutter_application_1/features/mainlogo/ui/main_logo_page.dart';
 import 'package:flutter_application_1/features/otp/service/otp_service.dart';
@@ -297,7 +298,7 @@ Future<bool> _checkGuestProfile() async {
   try {
     final box = Hive.box('settings');
     String? token = await box.get('token');
-    String url = 'https://genzrev.com/api/frontend/Guests/Get';
+    String url = '$baseApiUrl/Guests/Get';
 
     final response = await http.get(
       Uri.parse(url),

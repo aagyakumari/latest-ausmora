@@ -1,5 +1,6 @@
 import 'dart:convert';
 // import 'dart:nativewrappers/_internal/vm/lib/internal_patch.dart';
+import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/features/dashboard/model/dashboard_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive/hive.dart';
@@ -11,8 +12,8 @@ class DashboardRepository {
       final box = Hive.box('settings');
       String? token = await box.get('token'); // Retrieve the token from Hive storage
 
-      final url = 'https://genzrev.com/api/frontend/Guests/GetDashboardData?date=$date';
-      // final url = 'https://genzrev.com/api/frontend/Guests/GetDashboardData?date=2024-11-24';
+      final url = '$baseApiUrl/Guests/GetDashboardData?date=$date';
+      // final url = '$baseApiUrl/Guests/GetDashboardData?date=2024-11-24';
       
       final response = await http.get(
         Uri.parse(url),

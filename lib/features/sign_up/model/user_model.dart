@@ -6,6 +6,7 @@ class UserModel {
   final String tob;
   final bool isLogin; // Ensure it's a boolean
   final double tz; // Ensure it's a double
+  final String gender;
 
   UserModel({
     required this.name,
@@ -15,6 +16,8 @@ class UserModel {
     required this.tob,
      this.isLogin= false,
     required this.tz,
+    required this.gender
+    
   });
 
   Map<String, dynamic> toJson() {
@@ -26,6 +29,7 @@ class UserModel {
       "tob": tob,
       "is_login": isLogin, // Send correct boolean value
       "tz": tz, // Ensure it's a double, not a string
+      "gender": gender,
     };
   }
 }

@@ -224,13 +224,15 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
                   ),
                   // "Log out" button in red
                   TextButton(
-                    onPressed: () {
-                      HiveService().clearToken();
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => W1Page()),
-                      );
-                    },
+  onPressed: () {
+    HiveService().clearToken();
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const W1Page()),
+      (route) => false, // this clears all previous routes
+    );
+  },
                     child: Text(
                       'Log out',
                       style: TextStyle(

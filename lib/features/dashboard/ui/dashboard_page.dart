@@ -20,7 +20,6 @@ class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key, this.successMessage});
   @override
   _DashboardState createState() => _DashboardState();
- 
 }
 
 class _DashboardState extends State<DashboardPage> {
@@ -83,62 +82,63 @@ class _DashboardState extends State<DashboardPage> {
     final double circleSize = size.width * 0.22;
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
-         // Show the success message SnackBar if provided
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (widget.successMessage != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(widget.successMessage!),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    }
-  });
-    
+    // Show the success message SnackBar if provided
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.successMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.successMessage!),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    });
 
-    return Scaffold(
-      key:_scaffoldKey,
-      backgroundColor: Colors.white,
-      // bottomNavigationBar:
-      //     BottomNavBar(screenWidth: screenWidth, screenHeight: screenHeight),
-      body: Stack(
-        children: [
-          GestureDetector(
-            onTap: () {
-              if (_isMenuOpen) {
-                _closeMenu();
-              }
-            },
-            onHorizontalDragUpdate: (details) {
-              if (details.delta.dx < -6 && _isMenuOpen) {
-                _closeMenu();
-              } else if (details.delta.dx > 6 && !_isMenuOpen) {
-                _openMenu();
-              }
-            },
-            child: Column(
-              children: [
-                TopNavBar(
-                  title: 'Ausmora',
-                  onLeftButtonPressed: () {
-                    _openMenu();
-                  },
-                  onRightButtonPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SupportPage()),
-                    );
-                  },
-                  leftIcon: Icons.menu, // Icon for the left side
-                  rightIcon: Icons.help, // Icon for the right side
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 16),
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        key: _scaffoldKey,
+        backgroundColor: Colors.white,
+        // bottomNavigationBar:
+        //     BottomNavBar(screenWidth: screenWidth, screenHeight: screenHeight),
+        body: Stack(
+          children: [
+            GestureDetector(
+              onTap: () {
+                if (_isMenuOpen) {
+                  _closeMenu();
+                }
+              },
+              onHorizontalDragUpdate: (details) {
+                if (details.delta.dx < -6 && _isMenuOpen) {
+                  _closeMenu();
+                } else if (details.delta.dx > 6 && !_isMenuOpen) {
+                  _openMenu();
+                }
+              },
+              child: Column(
+                children: [
+                  TopNavBar(
+                    title: 'Ausmora',
+                    onLeftButtonPressed: () {
+                      _openMenu();
+                    },
+                    onRightButtonPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SupportPage()),
+                      );
+                    },
+                    leftIcon: Icons.menu, // Icon for the left side
+                    rightIcon: Icons.help, // Icon for the right side
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 16),
 
                         // Offers Section or Placeholder Image
                         _showOffers
@@ -361,7 +361,9 @@ class _DashboardState extends State<DashboardPage> {
       ),
        bottomNavigationBar:
           BottomNavBar(screenWidth: screenWidth, screenHeight: screenHeight),
+    )
     );
+  }
   }
 
   // Widget for no internet connection in offers section
@@ -518,4 +520,4 @@ class _DashboardState extends State<DashboardPage> {
       ),
     );
   }
-}
+

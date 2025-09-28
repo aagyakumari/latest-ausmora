@@ -1,3 +1,4 @@
+import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/hive/hive_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -12,10 +13,11 @@ class ProfileRepo {
   String? cityId;
   String? cityName;
   double? tz;
+  String? gender;
 
   // API URLs
-  static const String _updateProfileUrl = 'https://genzrev.com/api/frontend/Guests/UpdateGuestProfile';
-  static const String _getProfileUrl = 'https://genzrev.com/api/frontend/Guests/Get';
+  static String _updateProfileUrl = '$baseApiUrl/Guests/UpdateGuestProfile';
+  static String _getProfileUrl = '$baseApiUrl/Guests/Get';
 
   // Method to update guest profile (Including city & timezone)
   Future<bool> updateGuestProfile(Map<String, dynamic> updateData) async {
@@ -77,6 +79,8 @@ class ProfileRepo {
         // Extract timezone (tz) safely
         tz = (profileData['tz'] is num) ? profileData['tz'].toDouble() : 0.0;
 
+        gender = profileData['gender'] ?? 'No gender available';
+
         return profileData;
       } else {
         print('Error fetching profile: ${responseData['message']}');
@@ -98,4 +102,5 @@ class ProfileRepo {
   String? getCityId() => cityId;
   String? getCityName() => cityName;
   double? getTz() => tz;
+  String? getGender() => gender;
 }

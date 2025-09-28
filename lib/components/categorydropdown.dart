@@ -215,30 +215,27 @@ class CategoryDropdownState extends State<CategoryDropdown> {
   }
 
   Future<Map<String, List<Question>>> _fetchQuestionsForType(int categoryTypeId) async {
-  try {
-    List<Question> questions;
-
-    if (widget.showBundleQuestions) {
-      questions = await _service.getBundleQuestions(categoryTypeId.toString());
-    } else {
-      questions = await _service.getQuestionsByTypeId(categoryTypeId);
-    }
-
-    final Map<String, List<Question>> questionsByCategoryId = {};
-
-    for (var question in questions) {
-      if (!questionsByCategoryId.containsKey(question.questionCategoryId)) {
-        questionsByCategoryId[question.questionCategoryId] = [];
+    try {
+      if (widget.showBundleQuestions) {
+        // Fetch only bundle questions for the type and return as a single group
+        final questions = await _service.getBundleQuestionsByTypeId(categoryTypeId);
+        return { 'bundle': questions };
+      } else {
+        final questions = await _service.getQuestionsByTypeId(categoryTypeId);
+        final Map<String, List<Question>> questionsByCategoryId = {};
+        for (var question in questions) {
+          if (!questionsByCategoryId.containsKey(question.questionCategoryId)) {
+            questionsByCategoryId[question.questionCategoryId] = [];
+          }
+          questionsByCategoryId[question.questionCategoryId]!.add(question);
+        }
+        return questionsByCategoryId;
       }
-      questionsByCategoryId[question.questionCategoryId]!.add(question);
+    } catch (e) {
+      print('Error fetching questions: $e');
+      return {};
     }
-
-    return questionsByCategoryId;
-  } catch (e) {
-    print('Error fetching questions: $e');
-    return {};
   }
-}
 
 
   Future<Map<String, dynamic>?> _fetchProfileData() async {
@@ -300,7 +297,8 @@ class CategoryDropdownState extends State<CategoryDropdown> {
           "dob": profile['dob'],
           "city_id": profile['city_id'],
           "tob": profile['tob'],
-          "tz": profile['tz']
+          "tz": profile['tz'],
+          "gender": profile['gender'], 
         }
       };
 
@@ -312,7 +310,8 @@ class CategoryDropdownState extends State<CategoryDropdown> {
           "dob": widget.editedProfile2!['dob'],
           "city_id": widget.editedProfile2!['city_id'],
           "tob": widget.editedProfile2!['tob'],
-          "tz": widget.editedProfile2!['tz']
+          "tz": widget.editedProfile2!['tz'],
+          "gender": widget.editedProfile2!['gender']
         };
       }
 
@@ -838,7 +837,10 @@ Widget build(BuildContext context) {
                                                       "dob": profile['dob'],
                                                       "city_id": profile['city_id'],
                                                       "tob": profile['tob'],
-                                                      "tz": profile['tz']
+                                                      "tz": profile['tz'],
+                                                      "gender": profile['gender'],
+                                                      
+                                                      
                                                     }
                                                   };
 
@@ -1024,7 +1026,9 @@ else {
                                   "dob": profile['dob'],
                                   "city_id": profile['city_id'],
                                   "tob": profile['tob'],
-                                  "tz": profile['tz']
+                                  "tz": profile['tz'],
+                                  "gender": profile['gender'],
+                                  
                                 },
                                 "horoscope_from_date": formattedDate,
                               };
@@ -1098,14 +1102,17 @@ else {
                                 "dob": profile['dob'],
                                 "city_id": profile['city_id'],
                                 "tob": profile['tob'],
-                                "tz": profile['tz']
+                                "tz": profile['tz'],
+                                "gender": profile['gender'],
                               },
                               "profile2": {
                                 "name": widget.editedProfile2!['name'],
                                 "dob": widget.editedProfile2!['dob'],
                                 "city_id": widget.editedProfile2!['city_id'],
                                 "tob": widget.editedProfile2!['tob'],
-                                "tz": widget.editedProfile2!['tz']
+                                "tz": widget.editedProfile2!['tz'],
+                                "gender": widget.editedProfile2!['gender'],
+
                               }
                             };
 
@@ -1194,7 +1201,8 @@ else {
                                   "dob": profile['dob'],
                                   "city_id": profile['city_id'],
                                   "tob": profile['tob'],
-                                  "tz": profile['tz']
+                                  "tz": profile['tz'],
+                                  "gender": profile['gender'],
                                 },
                                 "auspicious_from_date": formattedDate,
                               };

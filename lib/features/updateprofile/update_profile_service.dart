@@ -1,11 +1,12 @@
 import 'dart:convert';
+import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/hive/hive_service.dart';
 import 'package:http/http.dart' as http;
 
 class UpdateProfileService {
-  final String apiUrl = 'https://genzrev.com/api/frontend/Guests/UpdateProfile';
+  final String apiUrl = '$baseApiUrl/Guests/UpdateProfile';
 
-  Future<bool> updateProfile(String name, String cityId, String dob, String tob, double tz) async {
+  Future<bool> updateProfile(String name, String cityId, String dob, String tob, double tz, String gender) async {
     try {
       // Get the token from Hive
       String? token = await HiveService().getToken(); // Implement this method in your HiveService
@@ -22,7 +23,8 @@ class UpdateProfileService {
         'city_id': cityId,
         'dob': dob,
         'tob': tob,
-        'tz': tz
+        'tz': tz,
+        'gender': gender,
       });
 
       print('Request Body: $body'); // Add this line for debugging

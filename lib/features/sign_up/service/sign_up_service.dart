@@ -12,6 +12,7 @@ class SignupService {
     required String tob,
     required String email,
     required double tz, // Ensure tz is a double
+    required String gender,
   }) async {
     String? apiUrl = await _hiveService.getApiUrl();
     if (apiUrl == null || apiUrl.isEmpty) {
@@ -27,6 +28,7 @@ class SignupService {
       "tob": tob,
       "is_login": false, // Always false for signup
       "tz": tz,
+      "gender": gender,
     };
 
     print("Signup Request Data: ${jsonEncode(signupData)}"); // Debugging

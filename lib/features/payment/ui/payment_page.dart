@@ -4,6 +4,7 @@ import 'package:flutter_application_1/components/bottom_nav_bar.dart';
 import 'package:flutter_application_1/components/topnavbar.dart';
 import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/features/dashboard/ui/dashboard_page.dart';
+import 'package:flutter_application_1/features/mainlogo/ui/main_logo_page.dart';
 import 'package:flutter_application_1/features/menu/ui/menu_page.dart';
 import 'package:flutter_application_1/features/payment/service/payment_service.dart';
 import 'package:flutter_application_1/features/payment/ui/gpay_screen.dart';
@@ -23,7 +24,8 @@ class PaymentPage extends StatefulWidget {
   final Map<String, dynamic>? profile2;
   final String? selectedDate; // Add selected date parameter
   final Map<String, dynamic>? editedProfile; // Add edited profile parameter
-  final String? clientSecret; // Optional client secret provided by previous step
+  final String?
+      clientSecret; // Optional client secret provided by previous step
   final String? inquiryNumber; // Optional inquiry number from previous step
 
   PaymentPage({
@@ -85,7 +87,8 @@ class _PaymentPageState extends State<PaymentPage> {
                       onRightButtonPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => SupportPage()),
+                          MaterialPageRoute(
+                              builder: (context) => SupportPage()),
                         );
                       },
                       leftIcon: Icons.arrow_back,
@@ -100,7 +103,8 @@ class _PaymentPageState extends State<PaymentPage> {
                             padding: EdgeInsets.all(screenWidth * 0.05),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(screenWidth * 0.03),
+                              borderRadius:
+                                  BorderRadius.circular(screenWidth * 0.03),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.grey.withOpacity(0.1),
@@ -131,7 +135,8 @@ class _PaymentPageState extends State<PaymentPage> {
                                 ),
                                 SizedBox(height: screenHeight * 0.02),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
                                       'Price:',
@@ -192,7 +197,8 @@ class _PaymentPageState extends State<PaymentPage> {
                               padding: EdgeInsets.all(screenWidth * 0.03),
                               decoration: BoxDecoration(
                                 color: Colors.red.shade50,
-                                borderRadius: BorderRadius.circular(screenWidth * 0.02),
+                                borderRadius:
+                                    BorderRadius.circular(screenWidth * 0.02),
                                 border: Border.all(color: Colors.red.shade200),
                               ),
                               child: Text(
@@ -226,6 +232,7 @@ class _PaymentPageState extends State<PaymentPage> {
         bottomNavigationBar: BottomNavBar(
           screenWidth: screenWidth,
           screenHeight: screenHeight,
+          currentPageIndex: null,
         ),
       ),
     );
@@ -322,67 +329,64 @@ class _PaymentPageState extends State<PaymentPage> {
 //   }
 // }
 
-
-
-/// Handle Stripe payment (both card and Google Pay) with backend verification polling
-Future<void> _handleStripePayment(String paymentMethod) async {
-  setState(() {
-    _isProcessing = true;
-    _errorMessage = null;
-  });
-
-  try {
-    final String? stripeSessionId = widget.clientSecret;
-    final String? inquiryNumber = widget.inquiryNumber;
-
-    if (stripeSessionId == null) {
-      throw Exception('Payment cannot proceed: missing client secret.');
-    }
-
-    // Step 1: Process payment with Stripe
-    final paymentResult = await widget._paymentService.processStripePayment(
-      stripeSessionId: stripeSessionId,
-      paymentMethod: paymentMethod,
-    );
-
-    if (!paymentResult['success']) {
-      throw Exception(paymentResult['error']);
-    }
-
-    // Step 2: Poll backend to verify payment
-    if (inquiryNumber == null || inquiryNumber.isEmpty) {
-      _showError('Missing inquiry number. Cannot verify payment.');
-      return;
-    }
-
-    bool isVerified = false;
-    int attempts = 0;
-    const int maxAttempts = 5; // Try 5 times
-    const Duration delayBetweenAttempts = Duration(seconds: 2);
-
-    while (!isVerified && attempts < maxAttempts) {
-      isVerified = await widget._paymentService.verifyPaymentStatus(inquiryNumber);
-      if (!isVerified) {
-        await Future.delayed(delayBetweenAttempts);
-        attempts++;
-      }
-    }
-
-    if (isVerified) {
-      _showSuccessDialog(inquiryNumber);
-    } else {
-      _showError('Payment could not be verified. Please contact support.');
-    }
-  } catch (e) {
-    _showError('Payment failed: ${e.toString()}');
-  } finally {
+  /// Handle Stripe payment (both card and Google Pay) with backend verification polling
+  Future<void> _handleStripePayment(String paymentMethod) async {
     setState(() {
-      _isProcessing = false;
+      _isProcessing = true;
+      _errorMessage = null;
     });
+
+    try {
+      final String? stripeSessionId = widget.clientSecret;
+      final String? inquiryNumber = widget.inquiryNumber;
+
+      if (stripeSessionId == null) {
+        throw Exception('Payment cannot proceed: missing client secret.');
+      }
+
+      // Step 1: Process payment with Stripe
+      final paymentResult = await widget._paymentService.processStripePayment(
+        stripeSessionId: stripeSessionId,
+        paymentMethod: paymentMethod,
+      );
+
+      if (!paymentResult['success']) {
+        throw Exception(paymentResult['error']);
+      }
+
+      // Step 2: Poll backend to verify payment
+      if (inquiryNumber == null || inquiryNumber.isEmpty) {
+        _showError('Missing inquiry number. Cannot verify payment.');
+        return;
+      }
+
+      bool isVerified = false;
+      int attempts = 0;
+      const int maxAttempts = 5; // Try 5 times
+      const Duration delayBetweenAttempts = Duration(seconds: 2);
+
+      while (!isVerified && attempts < maxAttempts) {
+        isVerified =
+            await widget._paymentService.verifyPaymentStatus(inquiryNumber);
+        if (!isVerified) {
+          await Future.delayed(delayBetweenAttempts);
+          attempts++;
+        }
+      }
+
+      if (isVerified) {
+        _showSuccessDialog(inquiryNumber);
+      } else {
+        _showError('Payment could not be verified. Please contact support.');
+      }
+    } catch (e) {
+      _showError('Payment failed: ${e.toString()}');
+    } finally {
+      setState(() {
+        _isProcessing = false;
+      });
+    }
   }
-}
-
-
 
   /// Handle non-Stripe payment methods
   void _handleNonStripePayment() {
@@ -391,59 +395,164 @@ Future<void> _handleStripePayment(String paymentMethod) async {
     widget._handleTickIconTap();
   }
 
-  /// Show success dialog
   void _showSuccessDialog(String inquiryNumber) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Payment Successful!'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.check_circle,
-              color: Colors.green,
-              size: 50,
-            ),
-            const SizedBox(height: 16),
-            Text('Your inquiry has been created successfully.'),
-            const SizedBox(height: 8),
-            Text(
-              'Inquiry Number: $inquiryNumber',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ],
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      backgroundColor: Colors.white,
+      elevation: 8,
+      titlePadding: const EdgeInsets.only(top: 20, bottom: 10),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      title: Center(
+        child: Text(
+          'Payment Successful!',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            color: Color(0xFFFF9933), // primary color
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.check_circle_rounded,
+            color: Color(0xFFFF9933),
+            size: 60,
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Your inquiry has been created successfully.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: Colors.black87),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Inquiry Number: $inquiryNumber',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.black,
+            ),
+          ),
+        ],
+      ),
+      actionsAlignment: MainAxisAlignment.center,
+      actions: [
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFFF9933),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          ),
+          onPressed: () async {
+            Navigator.of(context).pop();
+
+            final box = Hive.box('settings');
+            final guestProfile = await box.get('guest_profile');
+
+            if (guestProfile != null) {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => DashboardPage()),
               );
-            },
-            child: const Text('Continue'),
+            } else {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => MainLogoPage()),
+              );
+            }
+          },
+          child: const Text(
+            'Continue',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+
+ /// Show error dialog
+void _showError(String message) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      backgroundColor: Colors.white,
+      elevation: 8,
+      titlePadding: const EdgeInsets.only(top: 20, bottom: 10),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      title: Center(
+        child: Text(
+          'Error',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            color: Colors.redAccent, // Red for error
+          ),
+        ),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.error_rounded,
+            color: Colors.redAccent,
+            size: 60,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 14, color: Colors.black87),
           ),
         ],
       ),
-    );
-  }
+      actionsAlignment: MainAxisAlignment.center,
+      actions: [
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.redAccent,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text(
+            'OK',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
-  /// Show error message
-  void _showError(String message) {
-    setState(() {
-      _errorMessage = message;
-    });
-  }
 
   /// Fetch profile data from API
   Future<Map<String, dynamic>?> _fetchProfileFromAPI() async {
     try {
       final box = Hive.box('settings');
       String? token = await box.get('token');
-      
+
       if (token == null || token.isEmpty) {
         throw Exception('Authentication token not found');
       }

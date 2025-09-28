@@ -38,14 +38,14 @@ class AskQuestionService {
     }
   }
 
-  // Fetch bundle questions
-Future<List<Question>> getBundleQuestions(String categoryId) async {
-  try {
-    return await _repository.fetchQuestions(categoryId, isBundle: true);
-  } catch (e) {
-    throw Exception('Error getting bundle questions: $e');
+  // Fetch bundle questions by typeId
+  Future<List<Question>> getBundleQuestionsByTypeId(int typeId) async {
+    try {
+      return await _repository.fetchBundleQuestionsByTypeId(typeId);
+    } catch (e) {
+      throw Exception('Error getting bundle questions by typeId: $e');
+    }
   }
-}
 
 
   // Fetch questions filtered by type ID from the repository

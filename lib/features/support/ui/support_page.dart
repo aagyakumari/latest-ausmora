@@ -91,7 +91,7 @@ class _SupportPageState extends State<SupportPage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(screenWidth: screenWidth, screenHeight: screenHeight),
+      bottomNavigationBar: BottomNavBar(screenWidth: screenWidth, screenHeight: screenHeight, currentPageIndex: null,),
     );
   }
 }

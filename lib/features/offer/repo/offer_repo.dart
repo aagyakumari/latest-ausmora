@@ -1,12 +1,13 @@
 import 'dart:convert';
+import 'package:flutter_application_1/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive/hive.dart';
 import 'package:flutter_application_1/features/offer/model/offer_model.dart';
 
 class OfferRepository {
   // Update the URL if necessary based on the new API
-  final String offerApiUrl = "https://genzrev.com/api/frontend/GuestQuestion/GetQuestion?is_bundle=true"; // Updated URL to reflect bundle data
-  final String questionApiUrl = "https://genzrev.com/api/frontend/GuestQuestion/GetQuestion?type_id=3";
+  final String offerApiUrl = "$baseApiUrl/GuestQuestion/GetQuestion?is_bundle=true"; // Updated URL to reflect bundle data
+  final String questionApiUrl = "$baseApiUrl/GuestQuestion/GetQuestion?type_id=3";
 
   Future<String?> _getToken() async {
     final box = Hive.box('settings');

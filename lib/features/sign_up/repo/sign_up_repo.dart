@@ -1,3 +1,4 @@
+import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/hive/hive_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -7,7 +8,7 @@ class SignUpRepo {
   final HiveService _hiveService = HiveService();
   String? _otp; // Variable to store the OTP
   final String apiUrl =
-      'https://genzrev.com/api/frontend/Guests/login'; // API URL for both signup and login
+      '$baseApiUrl/Guests/login'; // API URL for both signup and login
   bool state = false;
 
   // Method to handle user signup
@@ -30,7 +31,8 @@ class SignUpRepo {
           'dob': user.dob,
           'tob': user.tob,
           'is_login': state,
-          'tz': user.tz 
+          'tz': user.tz,
+          'gender': user.gender
         }),
       );
 
@@ -116,7 +118,7 @@ class SignUpRepo {
 
 
 Future<List<Map<String, String>>> fetchCities(String query) async {
-  final url = Uri.parse('https://genzrev.com/api/frontend/Guests/SearchCity?search_param=$query');
+  final url = Uri.parse('$baseApiUrl/Guests/SearchCity?search_param=$query');
 
   try {
     final response = await http.get(url);
@@ -141,7 +143,7 @@ Future<List<Map<String, String>>> fetchCities(String query) async {
 }
 
 Future<List<Map<String, String>>> fetchTz() async {
-  final url = Uri.parse('https://genzrev.com/api/frontend/Guests/GetGMTTZ');
+  final url = Uri.parse('$baseApiUrl/Guests/GetGMTTZ');
 
   try {
     final response = await http.get(url).timeout(Duration(seconds: 10));

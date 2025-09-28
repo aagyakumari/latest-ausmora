@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/hive/hive_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -24,7 +25,7 @@ class _BundleWidgetState extends State<BundleWidget> {
     }
 
     final response = await http.get(
-      Uri.parse('https://genzrev.com/api/frontend/GuestQuestion/GetQuestion?is_bundle=true'),
+      Uri.parse('$baseApiUrl/GuestQuestion/GetQuestion?is_bundle=true'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

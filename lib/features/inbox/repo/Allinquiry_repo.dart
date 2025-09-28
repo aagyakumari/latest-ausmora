@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_application_1/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive/hive.dart';
 
@@ -11,7 +12,7 @@ Future<List<dynamic>> _fetchInquiries() async {
       throw Exception('Token is not available');
     }
 
-    const url = 'https://genzrev.com/api/frontend/GuestInquiry/MyInquiries'; // Replace with actual URL
+    final url = '$baseApiUrl/GuestInquiry/MyInquiries'; // Replace with actual URL
 
     final response = await http.get(
       Uri.parse(url),

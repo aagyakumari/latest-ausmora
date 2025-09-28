@@ -142,7 +142,7 @@ class _OurAstrologersPageState extends State<OurAstrologersPage> {
             ],
           ),
           bottomNavigationBar: BottomNavBar(
-              screenWidth: screenWidth, screenHeight: screenHeight),
+              screenWidth: screenWidth, screenHeight: screenHeight,currentPageIndex: null),
         ));
   }
 }

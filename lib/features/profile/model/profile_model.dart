@@ -6,6 +6,7 @@ class ProfileModel {
   final String cityId;
   final City? city;
   final double tz;
+  final String gender;
   final GuestProfile? guestProfile;
 
   ProfileModel({
@@ -16,6 +17,7 @@ class ProfileModel {
     required this.cityId,
     this.city,
     required this.tz,
+    required this.gender,
     this.guestProfile,
   });
 
@@ -49,6 +51,8 @@ class ProfileModel {
       cityId: json['city_id'] ?? '',
       city: json['city'] is Map<String, dynamic> ? City.fromJson(json['city']) : null,
       tz: (json['tz'] is num) ? (json['tz'] as num).toDouble() : 0.0,  // ✅ Convert `tz` safely
+      gender: json['gender'] ?? '',
+
       guestProfile: json['guest_profile'] is Map<String, dynamic>
           ? GuestProfile.fromJson(json['guest_profile'])
           : null,

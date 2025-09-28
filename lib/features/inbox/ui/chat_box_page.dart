@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/constants.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
@@ -39,7 +40,7 @@ class _ChatBoxPageState extends State<ChatBoxPage> {
       final box = Hive.box('settings');
       String? token = await box.get('token');
       if (token == null) throw Exception('Token is not available');
-      final url = 'https://genzrev.com/api/frontend/GuestInquiry/MyInquiries?inquiry_id=$inquiryId';
+      final url = '$baseApiUrl/GuestInquiry/MyInquiries?inquiry_id=$inquiryId';
       final response = await http.get(
         Uri.parse(url),
         headers: {'Authorization': 'Bearer $token'},
@@ -327,7 +328,8 @@ class _ChatBoxPageState extends State<ChatBoxPage> {
           Divider(color: Colors.orange.shade300),
           Text('Name: ${profile['name']}',
               style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text('City_ID: ${profile['city_id']}'),
+          Text('Gender: ${profile['gender']}'),
+          // Text('City_ID: ${profile['city_id']}'),
           Text('City: ${profile['city']['city_ascii']}'),
           Text('DOB: ${profile['dob']}'),
           Text('TOB: ${profile['tob']}'),
@@ -348,7 +350,7 @@ class _ChatBoxPageState extends State<ChatBoxPage> {
       }
 
       final url =
-          'https://genzrev.com/api/frontend/GuestInquiry/RateInquiry?inquiry_id=$inquiryId&rating=$rating';
+          '$baseApiUrl/GuestInquiry/RateInquiry?inquiry_id=$inquiryId&rating=$rating';
 
       final response = await http.get(
         Uri.parse(url),

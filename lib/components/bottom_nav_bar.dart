@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/features/ask_a_question/ui/ask_a_question_page.dart';
 import 'package:flutter_application_1/features/auspicious_time/ui/auspicious_time_page.dart';
 import 'package:flutter_application_1/features/compatibility/ui/compatibility_page.dart';
@@ -41,7 +42,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         throw Exception('Token is not available');
       }
 
-      const url = 'https://genzrev.com/api/frontend/GuestInquiry/TotalUnreadMessage';
+      final url = '$baseApiUrl/GuestInquiry/TotalUnreadMessage';
 
       final response = await http.get(
         Uri.parse(url),

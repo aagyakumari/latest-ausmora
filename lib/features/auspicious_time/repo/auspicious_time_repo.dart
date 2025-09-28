@@ -1,3 +1,4 @@
+import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/features/auspicious_time/model/auspicious_time_model.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -11,7 +12,7 @@ class AuspiciousRepository {
       String? token = await box.get('token'); // Retrieve the token from Hive storage
 
       // Using the dynamic date in the URL
-      final url = 'https://genzrev.com/api/frontend/Guests/GetDashboardData?date=$date';
+      final url = '$baseApiUrl/Guests/GetDashboardData?date=$date';
 
       final response = await http.get(
         Uri.parse(url),

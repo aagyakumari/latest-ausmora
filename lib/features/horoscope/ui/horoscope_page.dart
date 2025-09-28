@@ -6,6 +6,7 @@ import 'package:flutter_application_1/components/buildcirclewithname.dart';
 import 'package:flutter_application_1/components/categorydropdown.dart';
 import 'package:flutter_application_1/components/topnavbar.dart';
 import 'package:flutter_application_1/components/zodiac.utils.dart';
+import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/features/ask_a_question/repo/ask_a_question_repo.dart';
 import 'package:flutter_application_1/features/dashboard/ui/dashboard_page.dart';
 import 'package:flutter_application_1/features/horoscope/model/horoscope_model.dart';
@@ -23,6 +24,7 @@ import 'dart:convert';
 
 import 'package:intl/intl.dart';
 import 'package:flutter_application_1/components/profile_card_dialog.dart';
+
 
 class HoroscopePage extends StatefulWidget {
   final bool showBundleQuestions;
@@ -53,6 +55,7 @@ class _HoroscopePageState extends State<HoroscopePage> {
   DateTime? _horoscopeSelectedDate;
 
   String? _editedName = ProfileRepo().getName();
+  String? _editedGender = ProfileRepo().getGender();
   String? _editedDob = '';
   String? _editedCityId = '';
   String? _editedTob = '';
@@ -117,17 +120,20 @@ class _HoroscopePageState extends State<HoroscopePage> {
   final TextEditingController cityIdController = TextEditingController();
   final TextEditingController tobController = TextEditingController();
   final TextEditingController tzController = TextEditingController();
+  final TextEditingController genderController = TextEditingController();
+
 
   @override
   void initState() {
     super.initState();
-    _selectedDate = DateTime.now(); // Set the default date to the current date
+    _selectedDate = DateTime.now();
     _fetchProfileData();
-    
-    // Get the current date
-        _horoscopeFuture = _service.getHoroscope(_selectedDate!.toString().split(' ')[0]); // Initialize with the current date
-// Use dynamic date if needed
-    _questionsFuture = _askQuestionRepository.fetchQuestionsByTypeId(1);
+    _horoscopeFuture = _service.getHoroscope(_selectedDate!.toString().split(' ')[0]);
+    if (widget.showBundleQuestions) {
+      _questionsFuture = _askQuestionRepository.fetchBundleQuestionsByTypeId(1);
+    } else {
+      _questionsFuture = _askQuestionRepository.fetchQuestionsByTypeId(1);
+    }
   }
 
   Future<void> _fetchProfileData() async {
@@ -141,7 +147,7 @@ class _HoroscopePageState extends State<HoroscopePage> {
         return;
       }
 
-      String url = 'https://genzrev.com/api/frontend/Guests/Get';
+      String url = '$baseApiUrl/Guests/Get';
 
       final response = await http.get(
         Uri.parse(url),
@@ -461,6 +467,8 @@ class _HoroscopePageState extends State<HoroscopePage> {
   void _showEditableProfileDialog(BuildContext context) {
     final TextEditingController nameController =
         TextEditingController(text: _editedName);
+    final TextEditingController genderController =
+        TextEditingController(text: _editedGender);
     final TextEditingController dobController =
         TextEditingController(text: _editedDob);
     final TextEditingController cityIdController =
@@ -492,8 +500,16 @@ class _HoroscopePageState extends State<HoroscopePage> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildTextField(
-                    'Name', nameController, 'This field required', context),
+                Row(
+                  children: [
+                    Expanded(child:_buildTextField(
+                    'Name', nameController, 'This field required', context)),
+                    SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+                    Expanded(child:_buildTextField(
+                    'Gender', genderController, 'This field required', context)),
+                  ]
+                
+                ),
                 Row(
                   children: [
                     Expanded(
@@ -611,6 +627,7 @@ class _HoroscopePageState extends State<HoroscopePage> {
                       _editedCityId = cityIdController.text;
                       _editedTob = convertTo24HourFormat(tobController.text);
                       _editedTz = selectedTzValue.toString();
+                      _editedGender = genderController.text;
                     });
 
                     print('Edited Name: $_editedName');
@@ -618,6 +635,7 @@ class _HoroscopePageState extends State<HoroscopePage> {
                     print('Edited City ID: $_editedCityId');
                     print('Edited Time of Birth: $_editedTob');
                     print('Edited Time zone: $_editedTz');
+                    print('Edited Gender: $_editedGender');
 
                     Navigator.of(context).pop();
                   }
@@ -698,7 +716,8 @@ class _HoroscopePageState extends State<HoroscopePage> {
       'dob': _editedDob,
       'city_id': selectedCityId,
       'tob': _editedTob, // Default to an empty string if null
-      'tz': selectedTzValue.toString()
+      'tz': selectedTzValue.toString(),
+      'gender': _editedGender,
     };
   }
 

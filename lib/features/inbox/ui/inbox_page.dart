@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/components/bottom_nav_bar.dart';
 import 'package:flutter_application_1/components/topnavbar.dart';
+import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/features/dashboard/ui/dashboard_page.dart';
 import 'package:flutter_application_1/features/inbox/ui/chat_box_page.dart';
 import 'package:flutter_application_1/features/mainlogo/ui/main_logo_page.dart';
@@ -32,7 +33,7 @@ class _InboxPageState extends State<InboxPage> {
         throw Exception('Token is not available');
       }
 
-      const url = 'https://genzrev.com/api/frontend/GuestInquiry/MyInquiries';
+      final url = '$baseApiUrl/GuestInquiry/MyInquiries';
 
       final response = await http.get(
         Uri.parse(url),
@@ -98,7 +99,7 @@ class _InboxPageState extends State<InboxPage> {
       }
 
       final url =
-          'https://genzrev.com/api/frontend/GuestInquiry/MarkAsRead?inquiry_id=$inquiryId';
+          '$baseApiUrl/GuestInquiry/MarkAsRead?inquiry_id=$inquiryId';
 
       final response = await http.get(
         Uri.parse(url),

@@ -34,7 +34,9 @@ class _MainLogoPageState extends State<MainLogoPage> {
     bool isTablet = MediaQuery.of(context).size.width > 600;
     final size = MediaQuery.of(context).size;
 
-    return Scaffold(
+     return WillPopScope(
+      onWillPop: () async => false,
+      child:  Scaffold(
       key: _scaffoldKey,
       backgroundColor: Colors.white,
       body: Stack(
@@ -155,7 +157,8 @@ class _MainLogoPageState extends State<MainLogoPage> {
         ],
       ),
       bottomNavigationBar:
-          BottomNavBar(screenWidth: screenWidth, screenHeight: screenHeight),
+          BottomNavBar(screenWidth: screenWidth, screenHeight: screenHeight, currentPageIndex: null),
+      )
     );
   }
 }

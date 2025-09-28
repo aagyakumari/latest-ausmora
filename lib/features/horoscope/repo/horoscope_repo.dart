@@ -1,3 +1,4 @@
+import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/features/horoscope/model/horoscope_model.dart';
 import 'package:flutter_application_1/hive/hive_service.dart';
 import 'package:http/http.dart' as http;
@@ -13,8 +14,8 @@ class HoroscopeRepository {
       final box = Hive.box('settings');
       String? token = await box.get('token'); // Retrieve the token from Hive storage
 
-      final url = 'https://genzrev.com/api/frontend/Guests/GetDashboardData?date=$date';
-      // final url = 'https://genzrev.com/api/frontend/Guests/GetDashboardData?date=2024-11-24';
+      final url = '$baseApiUrl/Guests/GetDashboardData?date=$date';
+      // final url = '$baseApiUrl/Guests/GetDashboardData?date=2024-11-24';
 
       final response = await http.get(
         Uri.parse(url),

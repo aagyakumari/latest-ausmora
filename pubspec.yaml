@@ -87,6 +87,7 @@ flutter:
    - assets/images/orange_wheel.png  
    - assets/images/logo.png
    - assets/images/osmora.png
+   - assets/images/Ausmora.png
    - assets/images/Next.png
    - assets/images/horoscope2.png
    - assets/images/compatibility2.png
@@ -138,7 +139,6 @@ flutter:
    - assets/signs/capricorn.png
    - assets/signs/default.png
    - assets/images/aak.png
-   - assets/images/osmora.png
 
 
 

@@ -1,13 +1,36 @@
 import 'dart:convert';
+import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/features/ask_a_question/model/question_category_model.dart';
 import 'package:flutter_application_1/features/ask_a_question/model/question_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive/hive.dart'; // Ensure Hive is set up for secure storage
 
 class AskQuestionRepository {
-  final String categoryUrl = "https://genzrev.com/api/frontend/GuestQuestion/GetQuestionCategory?type_id=0";
-  final String questionUrl = "https://genzrev.com/api/frontend/GuestQuestion/GetQuestion?question_category_id=";
-  final String bundleUrl = "https://genzrev.com/api/frontend/GuestQuestion/GetQuestion?is_bundle=true"; // Updated URL to reflect bundle data
+  /// Fetch bundle questions filtered by `type_id`
+  Future<List<Question>> fetchBundleQuestionsByTypeId(int typeId) async {
+    try {
+      final box = Hive.box('settings');
+      String? token = await box.get('token');
+      final String url = "$baseApiUrl/GuestQuestion/GetQuestion?type_id=$typeId&is_bundle=true";
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body)['data']['questions'] as List;
+        return data.map((json) => Question.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load bundle questions for type_id $typeId');
+      }
+    } catch (e) {
+      throw Exception('Error fetching bundle questions by type_id: $e');
+    }
+  }
+  final String categoryUrl = "$baseApiUrl/GuestQuestion/GetQuestionCategory?type_id=0";
+  final String questionUrl = "$baseApiUrl/GuestQuestion/GetQuestion?question_category_id=";
+  final String bundleUrl = "$baseApiUrl/GuestQuestion/GetQuestion?is_bundle=true"; // Updated URL to reflect bundle data
   
 
   /// Fetch all categories with type_id=0
@@ -40,7 +63,7 @@ class AskQuestionRepository {
       final box = Hive.box('settings');
       String? token = await box.get('token'); // Retrieve the token from Hive storage
 
-      final String url = "https://genzrev.com/api/frontend/GuestQuestion/GetQuestionCategory?type_id=$typeId";
+      final String url = "$baseApiUrl/GuestQuestion/GetQuestionCategory?type_id=$typeId";
 
       final response = await http.get(
         Uri.parse(url),

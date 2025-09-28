@@ -62,6 +62,7 @@ class ProfileCardDialog extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _buildTextRow('Name', profile.name, labelStyle, valueStyle),
+              _buildTextRow('Gender', profile.gender, labelStyle, valueStyle),
               _buildTextRow('Date of Birth', profile.dob, labelStyle, valueStyle),
               _buildTextRow(
                 'Place of Birth',

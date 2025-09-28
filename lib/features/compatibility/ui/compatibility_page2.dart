@@ -6,6 +6,7 @@ import 'package:flutter_application_1/components/buildcirclewithname.dart';
 import 'package:flutter_application_1/components/categorydropdown.dart';
 import 'package:flutter_application_1/components/topnavbar.dart';
 import 'package:flutter_application_1/components/zodiac.utils.dart';
+import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/features/ask_a_question/model/question_model.dart';
 import 'package:flutter_application_1/features/ask_a_question/repo/ask_a_question_repo.dart';
 import 'package:flutter_application_1/features/compatibility/ui/compatibility_page.dart';
@@ -19,8 +20,7 @@ import 'dart:convert';
 import 'package:flutter_application_1/components/profile_card_dialog.dart';
 
 class CompatibilityPage2 extends StatefulWidget {
-    final bool showBundleQuestions;
-
+  final bool showBundleQuestions;
   const CompatibilityPage2({super.key, required this.showBundleQuestions});
 
 
@@ -40,6 +40,7 @@ class _CompatibilityPage2State extends State<CompatibilityPage2> {
   final AskQuestionRepository _askQuestionRepository =
       AskQuestionRepository(); // Instantiate the repository
   String? _editedName = ProfileRepo().getName();
+  String? _editedGender = ProfileRepo().getGender();
   String? _editedDob = '';
   String? _editedCityId = '';
   String? _editedTob = '';
@@ -65,6 +66,7 @@ class _CompatibilityPage2State extends State<CompatibilityPage2> {
   String selectedCityId2 = '';
 
   String? _editedName2 = '';
+  String? _editedGender2 = '';
   String? _editedDob2 = '';
   String? _editedCityId2 = '';
   String? _editedTob2 = '';
@@ -80,6 +82,7 @@ class _CompatibilityPage2State extends State<CompatibilityPage2> {
   final TextEditingController cityIdController = TextEditingController();
   final TextEditingController tobController = TextEditingController();
   final TextEditingController tzController = TextEditingController();
+  final TextEditingController genderController = TextEditingController();
 
 
   //For editable dialog 2
@@ -88,6 +91,7 @@ class _CompatibilityPage2State extends State<CompatibilityPage2> {
   final TextEditingController cityId2Controller = TextEditingController();
   final TextEditingController tob2Controller = TextEditingController();
   final TextEditingController tz2Controller = TextEditingController();
+  final TextEditingController gender2Controller = TextEditingController();
 
 
   void _updateIconColor() {
@@ -101,7 +105,11 @@ class _CompatibilityPage2State extends State<CompatibilityPage2> {
   void initState() {
     super.initState();
     _fetchProfileData();
-    _questionsFuture = _askQuestionRepository.fetchQuestionsByTypeId(2);
+    if (widget.showBundleQuestions) {
+      _questionsFuture = _askQuestionRepository.fetchBundleQuestionsByTypeId(2);
+    } else {
+      _questionsFuture = _askQuestionRepository.fetchQuestionsByTypeId(2);
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showEditableProfileDialog2(context);
     });
@@ -118,7 +126,7 @@ class _CompatibilityPage2State extends State<CompatibilityPage2> {
       return;
     }
 
-    String url = 'https://genzrev.com/api/frontend/Guests/Get';
+    String url = '$baseApiUrl/Guests/Get';
 
     final response = await http.get(
       Uri.parse(url),
@@ -332,6 +340,8 @@ class _CompatibilityPage2State extends State<CompatibilityPage2> {
   void _showEditableProfileDialog(BuildContext context) {
     final TextEditingController nameController =
         TextEditingController(text: _editedName);
+    final TextEditingController genderController =
+        TextEditingController(text: _editedGender);
     final TextEditingController dobController =
         TextEditingController(text: _editedDob);
     final TextEditingController cityIdController =
@@ -363,8 +373,16 @@ class _CompatibilityPage2State extends State<CompatibilityPage2> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildTextField(
-                    'Name', nameController, 'This field required', context),
+               Row(
+                  children: [
+                    Expanded(child:_buildTextField(
+                    'Name', nameController, 'This field required', context)),
+                    SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+                    Expanded(child:_buildTextField(
+                    'Gender', genderController, 'This field required', context)),
+                  ]
+                
+                ),
                 Row(
                   children: [
                     Expanded(
@@ -482,6 +500,7 @@ class _CompatibilityPage2State extends State<CompatibilityPage2> {
                       _editedCityId = cityIdController.text;
                       _editedTob = convertTo24HourFormat(tobController.text);
                       _editedTz = selectedTzValue.toString();
+                      _editedGender = genderController.text;
                     });
 
                     print('Edited Name: $_editedName');
@@ -489,6 +508,7 @@ class _CompatibilityPage2State extends State<CompatibilityPage2> {
                     print('Edited City ID: $_editedCityId');
                     print('Edited Time of Birth: $_editedTob');
                     print('Edited Time zone: $_editedTz');
+                    print('Edited Gender: $_editedGender');
 
                     Navigator.of(context).pop();
                   }
@@ -569,7 +589,8 @@ class _CompatibilityPage2State extends State<CompatibilityPage2> {
       'dob': _editedDob,
       'city_id': selectedCityId,
       'tob': _editedTob, // Default to an empty string if null
-      'tz': selectedTzValue.toString()
+      'tz': selectedTzValue.toString(),
+      'gender': _editedGender
     };
   }
 
@@ -624,10 +645,13 @@ class _CompatibilityPage2State extends State<CompatibilityPage2> {
 
   void _showEditableProfileDialog2(BuildContext context) {
   final TextEditingController name2Controller = TextEditingController(text: _editedName2);
+  final TextEditingController gender2Controller = TextEditingController(text: _editedGender2);
   final TextEditingController dob2Controller = TextEditingController(text: _editedDob2);
   final TextEditingController cityId2Controller = TextEditingController(text: _editedCityId2);
   final TextEditingController tob2Controller = TextEditingController(text: _editedTob2);
-    final TextEditingController tz2Controller = TextEditingController(text: _editedTz2?.toString() ?? '');
+  final TextEditingController tz2Controller = TextEditingController(text: _editedTz2?.toString() ?? '');
+
+
 
 
 
@@ -653,7 +677,16 @@ class _CompatibilityPage2State extends State<CompatibilityPage2> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTextField('Name', name2Controller, 'This field required', context),
+              Row(
+                  children: [
+                    Expanded(child:_buildTextField(
+                    'Name', name2Controller, 'This field required', context)),
+                    SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+                    Expanded(child:_buildTextField(
+                    'Gender', gender2Controller, 'This field required', context)),
+                  ]
+                
+                ),
               Row(
                 children: [
                   Expanded(
@@ -760,6 +793,7 @@ class _CompatibilityPage2State extends State<CompatibilityPage2> {
                 if (formKey.currentState!.validate()) {
                   setState(() {
                     _editedName2 = name2Controller.text;
+                    _editedGender2 = gender2Controller.text;
                     _editedDob2 = dob2Controller.text;
                     _editedCityId2 = cityId2Controller.text;
                     _editedTob2 = convertTo24HourFormat(tob2Controller.text);
@@ -772,6 +806,7 @@ class _CompatibilityPage2State extends State<CompatibilityPage2> {
                   print('Edited City ID: $_editedCityId2');
                   print('Edited Time of Birth: $_editedTob2');
                   print('Edited Time of Birth: $_editedTz2');
+                  print('Edited Gender: $_editedGender2');
 
 
                   Navigator.of(context).pop();
@@ -803,6 +838,7 @@ class _CompatibilityPage2State extends State<CompatibilityPage2> {
   Map<String, dynamic> getEditedProfile2() {
     return {
       'name': _editedName2,
+      'gender': _editedGender2,
       'dob': _editedDob2,
       'city_id': selectedCityId2,
       'tob': _editedTob2, // Default to an empty string if null

@@ -6,6 +6,7 @@ import 'package:flutter_application_1/components/buildcirclewithname.dart';
 import 'package:flutter_application_1/components/custom_button.dart';
 import 'package:flutter_application_1/components/topnavbar.dart';
 import 'package:flutter_application_1/components/zodiac.utils.dart';
+import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/features/compatibility/model/compatibility_model.dart';
 import 'package:flutter_application_1/features/compatibility/service/compatibility_service.dart';
 import 'package:flutter_application_1/features/compatibility/ui/compatibility_page2.dart';
@@ -60,7 +61,7 @@ class _CompatibilityPageState extends State<CompatibilityPage> {
       return;
     }
 
-    String url = 'https://genzrev.com/api/frontend/Guests/Get';
+    String url = '$baseApiUrl/Guests/Get';
 
     final response = await http.get(
       Uri.parse(url),

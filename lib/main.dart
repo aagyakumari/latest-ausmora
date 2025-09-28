@@ -48,8 +48,19 @@ Future<void> main() async {
 
   Stripe.publishableKey = Env.stripePublishableKey;
   await Firebase.initializeApp();
-  await createNotificationChannel(); // Create the notification channel
-  await initNotifications(); // Initialize notifications
+  await createNotificationChannel(); // Crea
+  await initNotifications(); // Initialize noti  te the notification channel
+  // ✅ Quick verification
+FirebaseApp app = Firebase.app();
+print('Firebase initialized: ${app.name}');
+print('Firebase project ID: ${app.options.projectId}');
+print('Firebase API key: ${app.options.apiKey}');
+
+// ✅ Get FCM token
+FirebaseMessaging messaging = FirebaseMessaging.instance;
+String? fcmToken = await messaging.getToken();
+print('FCM token: $fcmToken');
+
 
   // Initialize Hive and run the app...
   HiveService hiveService = HiveService();
@@ -59,10 +70,7 @@ Future<void> main() async {
     // Check if the API URL already exists in Hive
     final existingToken = await hiveService.getToken();
 
-    await hiveService.saveApiData(
-      loginApiUrl,
-      '',
-    );
+    // Do not overwrite the token on app start. Only saveApiData when logging in or signing up.
     await hiveService.saveOtpApiUrl(
       validateOtpApiUrl,
     );
