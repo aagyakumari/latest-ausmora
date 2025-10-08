@@ -1,6 +1,6 @@
 class Horoscope {
   final int rashiId;
-  final double rating;
+  final num rating;
   final String description;
 
   Horoscope({
@@ -13,7 +13,7 @@ class Horoscope {
   factory Horoscope.fromJson(Map<String, dynamic> json) {
     return Horoscope(
       rashiId: json['rashi_id'] as int,
-      rating: json['rating'] as double,
+      rating: json['rating'] as num,
       description: json['description'] as String,
     );
   }

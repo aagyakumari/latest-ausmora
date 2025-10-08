@@ -1,6 +1,6 @@
 class Auspicious {
   final int rashiId;
-  final double rating;
+  final num rating;
   final String description;
 
   Auspicious({
@@ -20,7 +20,7 @@ class Auspicious {
 
     return Auspicious(
       rashiId: json['rashi_id'] as int,
-      rating: json['rating'] as double,
+      rating: json['rating'] as num,
       description: json['description'] as String,
     );
   }

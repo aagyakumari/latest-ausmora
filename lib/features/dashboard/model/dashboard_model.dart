@@ -1,6 +1,6 @@
 class Horoscope {
   final int rashiId;
-  final double rating;
+  final num rating;
   final String description;
 
   Horoscope({
@@ -20,7 +20,7 @@ class Horoscope {
 
 class Auspicious {
   final int rashiId;
-  final double rating;
+  final num rating;
   final String description;
 
   Auspicious({
@@ -51,9 +51,9 @@ class DashboardData {
 
   factory DashboardData.fromJson(Map<String, dynamic> json) {
     return DashboardData(
-      horoscope: Horoscope.fromJson(json['data']['horoscope']),
-      compatibility: json['data']['compatibility'],
-      auspicious: Auspicious.fromJson(json['data']['auspicious']),
+      horoscope: Horoscope.fromJson(json['horoscope']),
+      compatibility: json['compatibility'],
+      auspicious: Auspicious.fromJson(json['auspicious']),
     );
   }
 }

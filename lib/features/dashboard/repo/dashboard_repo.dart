@@ -23,8 +23,11 @@ class DashboardRepository {
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return DashboardData.fromJson(data);
+       final data = json.decode(response.body);
+      print('Dashboard API response: $data'); // 👈 add this line
+
+       return DashboardData.fromJson(data['data']);
+
       } else {
         throw Exception('Failed to load dashboard data');
       }
