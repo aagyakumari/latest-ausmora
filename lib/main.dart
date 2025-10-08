@@ -187,12 +187,37 @@ Future<void> createNotificationChannel() async {
       ?.createNotificationChannel(channel);
 }
 
+// Top-level background message handler for Firebase Messaging
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("📩 Background message received!");
+  print("Notification: ${message.notification}");
+  print("Data: ${message.data}");
+  await handleBackgroundMessage(message);
+}
+
 // Initialize Firebase Messaging and handle notifications
 Future<void> initNotifications() async {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
 
   // Request permission
   await messaging.requestPermission();
+
+    // ✅ Initialize local notifications with tap handler
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  const InitializationSettings initializationSettings =
+      InitializationSettings(android: initializationSettingsAndroid);
+
+  await flutterLocalNotificationsPlugin.initialize(
+  initializationSettings,
+  onDidReceiveNotificationResponse: (NotificationResponse response) async {
+    print("🔔 Foreground notification tapped!");
+    // ✅ Just open InboxPage instead of ChatBox
+    navigatorKey.currentState?.pushNamed('/inbox');
+  },
+);
+
 
   // Get FCM Token and store in Hive
   final fcmToken = await messaging.getToken();
@@ -210,42 +235,66 @@ Future<void> initNotifications() async {
     print('Warning: FCM Token is null!');
   }
 
-  // Handle background messages
-  FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print("📩 Foreground message received!");
+    print("Notification: ${message.notification}");
+    print("Data: ${message.data}");
+    handleForegroundMessage(message);
+  });
 
-  // Handle foreground messages
-  FirebaseMessaging.onMessage.listen(handleForegroundMessage);
-
-  // Handle when the app is opened from a notification
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    print("📩 Notification tapped!");
+    print("Notification: ${message.notification}");
+    print("Data: ${message.data}");
     handleNotificationTap(message);
   });
+
+  // Register the top-level background handler
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 }
 
 // Foreground message handler
 void handleForegroundMessage(RemoteMessage message) {
-  if (message.notification != null) {
-    final notification = message.notification!;
-    final androidNotification = notification.android;
+  final notification = message.notification;
+  final data = message.data;
 
-    if (androidNotification != null) {
-      flutterLocalNotificationsPlugin.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'your_channel_id', // Unique channel ID
-            'Your Channel Name', // Channel name
-            channelDescription: 'Your channel description',
-            importance: Importance.high,
-            priority: Priority.high,
-          ),
+  // Show notification in system tray
+  if (notification?.android != null) {
+    flutterLocalNotificationsPlugin.show(
+      notification.hashCode,
+      notification?.title,
+      notification?.body,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'your_channel_id',
+          'Your Channel Name',
+          channelDescription: 'Your channel description',
+          importance: Importance.high,
+          priority: Priority.high,
         ),
-      );
+      ),
+    );
+  }
+
+  // If inquiry data is sent, open chat instantly
+  if (data['inquiry_id'] != null && data['inquiry'] != null) {
+    Map<String, dynamic>? inquiry;
+    try {
+      inquiry = jsonDecode(data['inquiry']);
+    } catch (e) {
+      print('Error decoding inquiry JSON: $e');
     }
+
+    navigatorKey.currentState?.pushNamed(
+      '/chat',
+      arguments: {
+        'inquiryId': data['inquiry_id'],
+        'inquiry': inquiry,
+      },
+    );
   }
 }
+
 
 // Background message handler
 // Background message handler (when the app is terminated or in the background)

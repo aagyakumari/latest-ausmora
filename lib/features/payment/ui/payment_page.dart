@@ -114,103 +114,142 @@ class _PaymentPageState extends State<PaymentPage> {
                                 ),
                               ],
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Question:',
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.04,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                SizedBox(height: screenHeight * 0.01),
-                                Text(
-                                  widget.question,
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.035,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                                SizedBox(height: screenHeight * 0.02),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Price:',
-                                      style: TextStyle(
-                                        fontSize: screenWidth * 0.04,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    Text(
-                                      '\$${widget.price}',
-                                      style: TextStyle(
-                                        fontSize: screenWidth * 0.04,
-                                        fontWeight: FontWeight.bold,
-                                        color: const Color(0xFFFF9933),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                           child: Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    // --- Question Row ---
+    Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Question: ',
+          style: TextStyle(
+            fontSize: screenWidth * 0.04,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            widget.question,
+            style: TextStyle(
+              fontSize: screenWidth * 0.035,
+              color: Colors.black54,
+            ),
+          ),
+        ),
+      ],
+    ),
+    SizedBox(height: screenHeight * 0.02),
+
+    // --- Price Row ---
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Price:',
+          style: TextStyle(
+            fontSize: screenWidth * 0.04,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        Expanded(
+        child:Text(
+          '\$${widget.price}',
+          style: TextStyle(
+            fontSize: screenWidth * 0.04,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFFFF9933),
+          ),
+        ),
+    ),
+      ],
+    ),
+  ],
+),
                           ),
-                          SizedBox(height: screenHeight * 0.04),
-                          Text(
-                            'Choose Payment Method:',
-                            style: TextStyle(
-                              fontSize: screenWidth * 0.04,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          SizedBox(height: screenHeight * 0.04),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: paymentOptions.map((option) {
-                              return Column(
-                                children: [
-                                  GestureDetector(
-                                    onTap: _isProcessing ? null : option.onTap,
-                                    child: Opacity(
-                                      opacity: _isProcessing ? 0.6 : 1.0,
-                                      child: Image.asset(
-                                        option.imagePath,
-                                        width: screenWidth * 0.2,
-                                        height: screenWidth * 0.2,
-                                        fit: BoxFit.contain,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: screenHeight * 0.02),
-                                ],
-                              );
-                            }).toList(),
-                          ),
-                          if (_errorMessage != null) ...[
-                            SizedBox(height: screenHeight * 0.02),
-                            Container(
-                              padding: EdgeInsets.all(screenWidth * 0.03),
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade50,
-                                borderRadius:
-                                    BorderRadius.circular(screenWidth * 0.02),
-                                border: Border.all(color: Colors.red.shade200),
-                              ),
-                              child: Text(
-                                _errorMessage!,
-                                style: TextStyle(
-                                  color: Colors.red.shade700,
-                                  fontSize: screenWidth * 0.03,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ],
+                        SizedBox(height: screenHeight * 0.04),
+Text(
+  'Choose Payment Method:',
+  style: TextStyle(
+    fontSize: screenWidth * 0.04,
+    fontWeight: FontWeight.bold,
+    color: Colors.black87,
+  ),
+),
+SizedBox(height: screenHeight * 0.04),
+
+// --- Payment Grid ---
+Padding(
+  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
+  child: GridView.builder(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 2, // 2 per row
+      crossAxisSpacing: screenWidth * 0.06,
+      mainAxisSpacing: screenHeight * 0.03,
+      childAspectRatio: 1.2, // slightly taller boxes
+    ),
+    itemCount: paymentOptions.length,
+    itemBuilder: (context, index) {
+      final option = paymentOptions[index];
+      return GestureDetector(
+        onTap: _isProcessing ? null : option.onTap,
+        child: Opacity(
+          opacity: _isProcessing ? 0.6 : 1.0,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(screenWidth * 0.04),
+              border: Border.all(color: Colors.grey.withOpacity(0.1)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.15),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(screenWidth * 0.03),
+                child: Image.asset(
+                  option.imagePath,
+                  width: screenWidth * 0.18,
+                  height: screenWidth * 0.18,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  ),
+),
+// --- Error Message (if any) ---
+if (_errorMessage != null) ...[
+  SizedBox(height: screenHeight * 0.02),
+  Container(
+    padding: EdgeInsets.all(screenWidth * 0.03),
+    decoration: BoxDecoration(
+      color: Colors.red.shade50,
+      borderRadius: BorderRadius.circular(screenWidth * 0.02),
+      border: Border.all(color: Colors.red.shade200),
+    ),
+    child: Text(
+      _errorMessage!,
+      style: TextStyle(
+        color: Colors.red.shade700,
+        fontSize: screenWidth * 0.03,
+      ),
+      textAlign: TextAlign.center,
+    ),
+  ),
+],
+
                         ],
                       ),
                     ),
