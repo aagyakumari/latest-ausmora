@@ -467,8 +467,6 @@ void _showEditableProfileDialog(BuildContext context) {
         TextEditingController(text: _editedCityId);
     final TextEditingController tobController =
         TextEditingController(text: _editedTob);
-    final TextEditingController tzController =
-        TextEditingController(text: _editedTz?.toString() ?? '');
 
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
@@ -492,61 +490,49 @@ void _showEditableProfileDialog(BuildContext context) {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-               Row(
-                  children: [
-                    Expanded(child:_buildTextField(
-                    'Name', nameController, 'This field required', context)),
-                    SizedBox(width: MediaQuery.of(context).size.width * 0.02),
-                    Expanded(child:_buildTextField(
-                    'Gender', genderController, 'This field required', context)),
-                  ]
-                
+                SizedBox(height: MediaQuery.of(context).size.width * 0.01),
+                _buildTextField('Name', nameController, 'Name is required', context),
+                SizedBox(height: MediaQuery.of(context).size.width * 0.01),
+                _buildTextField('Gender', genderController, 'Gender is required', context),
+                SizedBox(height: MediaQuery.of(context).size.width * 0.01),
+                GestureDetector(
+                  onTap: () async {
+                    DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime.now(),
+                    );
+                    if (pickedDate != null) {
+                      dobController.text = "${pickedDate.toLocal()}"
+                          .split(' ')[0]; // Format as yyyy-mm-dd
+                    }
+                  },
+                  child: AbsorbPointer(
+                    child: _buildTextField('Date of Birth', dobController,
+                        'Please select a date', context),
+                  ),
                 ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () async {
-                          DateTime? pickedDate = await showDatePicker(
-                            context: context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime(1900),
-                            lastDate: DateTime.now(),
-                          );
-                          if (pickedDate != null) {
-                            dobController.text = "${pickedDate.toLocal()}"
-                                .split(' ')[0]; // Format as yyyy-mm-dd
-                          }
-                        },
-                        child: AbsorbPointer(
-                          child: _buildTextField('Date of Birth', dobController,
-                              'Please select a date', context),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: MediaQuery.of(context).size.width * 0.02),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () async {
-                          TimeOfDay? pickedTime = await showTimePicker(
-                            context: context,
-                            initialTime: TimeOfDay.now(),
-                          );
-                          if (pickedTime != null) {
-                            tobController.text =
-                                pickedTime.format(context); // Format time
-                          }
-                        },
-                        child: AbsorbPointer(
-                          child: _buildTextField('Time of Birth', tobController,
-                              'Please select a time', context),
-                        ),
-                      ),
-                    ),
-                  ],
+                SizedBox(height: MediaQuery.of(context).size.width * 0.01),
+                GestureDetector(
+                  onTap: () async {
+                    TimeOfDay? pickedTime = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.now(),
+                    );
+                    if (pickedTime != null) {
+                      tobController.text =
+                          pickedTime.format(context); // Format time
+                    }
+                  },
+                  child: AbsorbPointer(
+                    child: _buildTextField('Time of Birth', tobController,
+                        'Please select a time', context),
+                  ),
                 ),
+                SizedBox(height: MediaQuery.of(context).size.width * 0.01),
                 _buildCitySelectionField(controller: cityIdController),
-                SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+                SizedBox(height: MediaQuery.of(context).size.width * 0.01),
                 FutureBuilder<List<Map<String, String>>>(
                   future: fetchTz(),
                   builder: (context, snapshot) {
@@ -554,29 +540,62 @@ void _showEditableProfileDialog(BuildContext context) {
                       return CircularProgressIndicator();
                     }
                     final tzSuggestions = snapshot.data!;
-                    return DropdownButtonFormField<String>(
-                      value: tzSuggestions.any((tz) => tz["id"] == selectedTzId) ? selectedTzId : null,
-                      items: tzSuggestions.map((tz) => DropdownMenuItem<String>(
-                        value: tz["id"],
-                        child: Text(tz["name"] ?? ""),
-                      )).toList(),
-                      onChanged: (String? newValue) {
-                        final selected = tzSuggestions.firstWhere((tz) => tz["id"] == newValue, orElse: () => {});
-                        setState(() {
-                          selectedTzId = selected["id"] ?? "";
-                          selectedTzName = selected["name"] ?? "";
-                          selectedTzValue = double.tryParse(selectedTzId) ?? 0.0;
-                          _editedTz = selectedTzValue.toString();
-                        });
-                      },
-                      decoration: InputDecoration(
-                        labelText: "Time Zone",
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    return SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.67,
+                      child: DropdownButtonFormField<String>(
+                        value: tzSuggestions.any((tz) => tz["id"] == selectedTzId) ? selectedTzId : null,
+                        items: tzSuggestions.map((tz) => DropdownMenuItem<String>(
+                          value: tz["id"],
+                          child: Text(
+                            tz["name"] ?? "",
+                            style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.03),
+                          ),
+                        )).toList(),
+                        onChanged: (String? newValue) {
+                          final selected = tzSuggestions.firstWhere((tz) => tz["id"] == newValue, orElse: () => {});
+                          setState(() {
+                            selectedTzId = selected["id"] ?? "";
+                            selectedTzName = selected["name"] ?? "";
+                            selectedTzValue = double.tryParse(selectedTzId) ?? 0.0;
+                            _editedTz = selectedTzValue.toString();
+                          });
+                        },
+                        decoration: InputDecoration(
+                          hintText: "Time Zone",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: const BorderSide(color: Color(0xFFDDDDDD), width: 1),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: const BorderSide(color: Color(0xFFFF9933), width: 1),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: const BorderSide(color: Colors.red, width: 1),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: const BorderSide(color: Colors.red, width: 1),
+                          ),
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: MediaQuery.of(context).size.width * 0.01, 
+                            horizontal: MediaQuery.of(context).size.width * 0.03
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Time Zone is required';
+                          }
+                          return null;
+                        },
+                        dropdownColor: Colors.white,
+                        menuMaxHeight: MediaQuery.of(context).size.height * 0.15,
                       ),
                     );
                   },
                 ),
+                SizedBox(height: MediaQuery.of(context).size.width * 0.01),
               ],
             ),
           ),
@@ -716,143 +735,168 @@ void _showEditableProfileDialog(BuildContext context) {
   // Using MediaQuery to adjust padding, font size and width dynamically
   double screenWidth = MediaQuery.of(context).size.width;
 
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        label,
-        style: TextStyle(
-          color: const Color.fromARGB(255, 87, 86, 86),
-          fontSize: screenWidth * 0.03, // Dynamic font size
-          fontWeight: FontWeight.w400,
+  return SizedBox(
+    width: screenWidth * 0.8, // Adjust width of text field based on screen size
+    child: TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        hintText: label, // Use label as hint text
+        contentPadding: EdgeInsets.symmetric(vertical: screenWidth * 0.01, horizontal: screenWidth * 0.03), // Reduced vertical padding
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: const BorderSide(color: Color(0xFFDDDDDD), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: const BorderSide(color: Color(0xFFFF9933), width: 1),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: const BorderSide(color: Colors.red, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6),
+          borderSide: const BorderSide(color: Colors.red, width: 1),
         ),
       ),
-      SizedBox(height: screenWidth * 0.02), // Adjusted space based on screen size
-      SizedBox(
-        width: screenWidth * 0.8, // Adjust width of text field based on screen size
-        child: TextFormField(
-          controller: controller,
-          decoration: InputDecoration(
-            hintText: '', // Keep hint text minimal
-            contentPadding: EdgeInsets.symmetric(vertical: screenWidth * 0.02, horizontal: screenWidth * 0.03), // Adjust padding dynamically
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(6),
-              borderSide: const BorderSide(color: Color(0xFFDDDDDD), width: 1),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(6),
-              borderSide: const BorderSide(color: Color(0xFFFF9933), width: 1),
-            ),
-          ),
-          style: TextStyle(fontSize: screenWidth * 0.03), // Adjust font size dynamically
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return validationMessage;
-            }
-            if (label.contains('Date of Birth') && !RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) {
-              return 'Please enter date in yyyy-mm-dd format';
-            }
-            return null;
-          },
-        ),
-      ),
-      SizedBox(height: screenWidth * 0.04), // Adjust space after text field
-    ],
+      style: TextStyle(fontSize: screenWidth * 0.03), // Adjust font size dynamically
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return validationMessage;
+        }
+        
+        // Enhanced validation based on field type
+        if (label.contains('Name')) {
+          if (value.length < 2) {
+            return 'Name must be at least 2 characters';
+          }
+          if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
+            return 'Name can only contain letters and spaces';
+          }
+        }
+        
+        if (label.contains('Gender')) {
+          final validGenders = ['male', 'female', 'Male', 'Female', 'MALE', 'FEMALE'];
+          if (!validGenders.contains(value)) {
+            return 'Please enter Male or Female';
+          }
+        }
+        
+        if (label.contains('Date of Birth') && !RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) {
+          return 'Please enter date in yyyy-mm-dd format';
+        }
+        
+        if (label.contains('Time of Birth')) {
+          if (!RegExp(r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s?(AM|PM|am|pm)?$').hasMatch(value)) {
+            return 'Please enter time in HH:mm format (e.g., 14:30 or 2:30 PM)';
+          }
+        }
+        
+        return null;
+      },
+    ),
   );
   }
   Widget _buildCitySelectionField({required TextEditingController controller}) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
-    double fontSize = screenWidth * 0.03;
 
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: screenWidth * 0.05,
-        vertical: screenHeight * 0.015,
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Label for "From"
-          Container(
-            width: screenWidth * 0.15,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              "From",
-              style: TextStyle(
-                color: const Color.fromARGB(255, 9, 9, 9),
-                fontFamily: 'Inter',
-                fontSize: fontSize,
+    return SizedBox(
+      width: screenWidth * 0.8,
+      child: Autocomplete<String>(
+        optionsBuilder: (TextEditingValue textEditingValue) async {
+          if (textEditingValue.text.isEmpty) {
+            return const Iterable<String>.empty();
+          }
+
+          // Debounce API call to prevent excessive requests
+          return _debounceFetchCities(textEditingValue.text);
+        },
+        onSelected: (String selection) {
+          final selected = citySuggestions.firstWhere(
+            (element) =>
+                "${element['city']}, ${element['country']}" ==
+                selection,
+            orElse: () => {}, // Prevents errors if no match is found
+          );
+
+          setState(() {
+            selectedCity = selected["city"] ?? "";
+            selectedCountry = selected["country"] ?? "";
+            selectedLng = selected["lat"] ?? "0.0"; // Changed from "lng"
+            selectedCityId = selected["id"] ?? "";
+          });
+        },
+        optionsViewBuilder: (context, onSelected, options) {
+          return Align(
+            alignment: Alignment.topLeft,
+            child: Material(
+              elevation: 4,
+              borderRadius: BorderRadius.circular(6),
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.67,
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.15,
+                ),
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  itemCount: options.length,
+                  itemBuilder: (context, index) {
+                    final option = options.elementAt(index);
+                    return ListTile(
+                      dense: true,
+                      title: Text(
+                        option,
+                        style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.03),
+                      ),
+                      onTap: () => onSelected(option),
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-          SizedBox(width: screenWidth * 0.03),
-
-          // TextField with Autocomplete for city selection
-          Expanded(
-            child: SizedBox(
-              height: screenHeight * 0.05,
-              child: Autocomplete<String>(
-                optionsBuilder: (TextEditingValue textEditingValue) async {
-                  if (textEditingValue.text.isEmpty) {
-                    return const Iterable<String>.empty();
-                  }
-
-                  // Debounce API call to prevent excessive requests
-                  return _debounceFetchCities(textEditingValue.text);
-                },
-                onSelected: (String selection) {
-                  final selected = citySuggestions.firstWhere(
-                    (element) =>
-                        "${element['city']}, ${element['country']}" ==
-                        selection,
-                    orElse: () => {}, // Prevents errors if no match is found
-                  );
-
-                  setState(() {
-                    selectedCity = selected["city"] ?? "";
-                    selectedCountry = selected["country"] ?? "";
-                    selectedLng =
-                        selected["lat"] ?? "0.0"; // Changed from "lng"
-                    selectedCityId = selected["id"] ?? "";
-                  });
-                },
-                fieldViewBuilder:
-                    (context, controller, focusNode, onEditingComplete) {
-                  return TextField(
-                    controller: controller,
-                    focusNode: focusNode,
-                    onEditingComplete: onEditingComplete,
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.03,
-                        vertical: screenHeight * 0.01,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide:
-                            BorderSide(color: Color(0xFFFF9933), width: 1.0),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide:
-                            BorderSide(color: Color(0xFFFF9933), width: 1.0),
-                      ),
-                      hintText: "Enter city name",
-                      hintStyle: TextStyle(
-                          color: const Color.fromARGB(179, 6, 6, 6),
-                          fontSize: fontSize),
-                    ),
-                    style: TextStyle(
-                      color: const Color.fromARGB(255, 7, 7, 7),
-                      fontSize: fontSize,
-                    ),
-                  );
-                },
+          );
+        },
+        fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+          return TextFormField(
+            controller: controller,
+            focusNode: focusNode,
+            onEditingComplete: onEditingComplete,
+            decoration: InputDecoration(
+              hintText: "Enter city name",
+              contentPadding: EdgeInsets.symmetric(
+                vertical: screenWidth * 0.01,
+                horizontal: screenWidth * 0.03,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(6),
+                borderSide: const BorderSide(color: Color(0xFFDDDDDD), width: 1),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(6),
+                borderSide: const BorderSide(color: Color(0xFFFF9933), width: 1),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(6),
+                borderSide: const BorderSide(color: Colors.red, width: 1),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(6),
+                borderSide: const BorderSide(color: Colors.red, width: 1),
               ),
             ),
-          ),
-        ],
+            style: TextStyle(fontSize: screenWidth * 0.03),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'City is required';
+              }
+              if (selectedCityId.isEmpty) {
+                return 'Please select a valid city';
+              }
+              return null;
+            },
+          );
+        },
       ),
     );
   }

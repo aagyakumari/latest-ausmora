@@ -26,7 +26,7 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1098410893614:android:f6412dcc45c969ad5fdabf",
+        "mobilesdk_app_id": "1:1098410893614:android:3b24c071dcbe9e7b5fdabf",
         "android_client_info": {
           "package_name": "com.example.flutter_application_1"
         }
@@ -37,12 +37,31 @@
           "current_key": "AIzaSyC5KMdJQ9C-H-m_9qjf3h4CjukLBlIiu9g"
         }
       ],
- "services": {
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1098410893614:android:7ab5936e3aaf49a15fdabf",
+        "android_client_info": {
+          "package_name": "com.example.push_notification_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5KMdJQ9C-H-m_9qjf3h4CjukLBlIiu9g"
+        }
+      ],
+      "services": {
         "appinvite_service": {
           "other_platform_oauth_client": []
         }
       }
     }
   ],
-  "configuration_version":"1"
+  "configuration_version": "1"
 }
