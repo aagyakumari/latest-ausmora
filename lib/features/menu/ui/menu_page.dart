@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/features/dashboard/ui/dashboard_page.dart';
+import 'package:flutter_application_1/features/mainlogo/ui/main_logo_page.dart';
 import 'package:flutter_application_1/features/menu/service/menu_service.dart';
 import 'package:flutter_application_1/features/settings/ui/settings_page.dart';
 import 'package:flutter_application_1/features/sign_up/ui/w1_page.dart';
 import 'package:flutter_application_1/features/support/ui/support_page.dart';
 import 'package:flutter_application_1/hive/hive_service.dart';
+import 'package:hive/hive.dart';
 
 class Menu extends StatefulWidget {
   final VoidCallback? closeMenu;
@@ -84,6 +87,25 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
+                            _buildMenuItem(context, 'My Dashboard', Icons.dashboard, () async {
+  final box = Hive.box('settings');
+  final guestProfile = await box.get('guest_profile');
+
+  if (guestProfile != null) {
+    // Navigate to DashboardPage if guest_profile exists
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => DashboardPage()),
+    );
+  } else {
+    // Navigate to MainLogoPage if guest_profile does not exist
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => MainLogoPage()),
+    );
+  }
+}),
+
                             _buildMenuItem(context, 'My Profile', Icons.person, () {
                               MenuService.navigateToProfile(context);
                             }),
@@ -96,9 +118,9 @@ class _MenuState extends State<Menu> with SingleTickerProviderStateMixin {
                             // _buildMenuItem(context, 'Compatibility', Icons.favorite, () {
                             //   MenuService.navigateToCompatibility(context);
                             // }),
-                            _buildMenuItem(context, 'Our Astrologers', Icons.group, () {
-                              MenuService.navigateToAstrologers(context);
-                            }),
+                            // _buildMenuItem(context, 'Our Astrologers', Icons.group, () {
+                            //   MenuService.navigateToAstrologers(context);
+                            // }),
                             _buildMenuItem(context, 'Settings', Icons.settings, () {
                               showModalBottomSheet(
                                 context: context,

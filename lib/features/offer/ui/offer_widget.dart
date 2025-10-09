@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/features/auspicious_time/ui/auspicious_time_page.dart';
-import 'package:flutter_application_1/features/compatibility/ui/compatibility_page.dart';
 import 'package:flutter_application_1/features/compatibility/ui/compatibility_page2.dart';
 import 'package:flutter_application_1/features/dashboard/ui/dashboard_page.dart';
 import 'package:flutter_application_1/features/horoscope/ui/horoscope_page.dart';
 import 'package:flutter_application_1/features/offer/model/offer_model.dart';
-import 'package:flutter_application_1/features/offer/repo/offer_repo.dart';
-import 'package:flutter_application_1/features/offer/ui/offer_page.dart';
 
 class OfferWidget extends StatefulWidget {
-  final Offer? offer; // Nullable offer
-  final bool tappable; // Control tap behavior
+  final Offer? offer;
+  final bool tappable;
 
-  const OfferWidget({super.key, this.offer, this.tappable = true}); // Default to true
+  const OfferWidget({super.key, this.offer, this.tappable = true});
 
   @override
   _OfferWidgetState createState() => _OfferWidgetState();
@@ -25,65 +22,58 @@ class _OfferWidgetState extends State<OfferWidget> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     if (widget.offer == null) {
-      return _buildNoBundleContainer(screenWidth, screenHeight);
+      return _buildNoBundleContainer(screenWidth);
     }
 
-   return widget.tappable
-    ? GestureDetector(
-        onTap: () {
-          if (widget.offer == null) return;
+    return widget.tappable
+        ? GestureDetector(
+            onTap: _handleTap,
+            child: _buildOfferContainer(screenWidth, screenHeight),
+          )
+        : _buildOfferContainer(screenWidth, screenHeight);
+  }
 
-          Widget destinationPage;
-          switch (widget.offer!.categoryTypeId) {
-            case 1:
-              destinationPage = HoroscopePage(
-                showBundleQuestions: true,
-              );
-              break;
-            case 2:
-              destinationPage = CompatibilityPage2(
-                showBundleQuestions: true,
-              );
-              break;
-            case 3:
-              destinationPage = AuspiciousTimePage(
-                showBundleQuestions: true,
-              );
-              break;
-            default:
-              destinationPage = DashboardPage();
-              break;
-          }
+  void _handleTap() {
+    if (widget.offer == null) return;
 
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => destinationPage),
-          );
-        },
-        child: _buildOfferContainer(screenWidth, screenHeight),
-      )
-    : _buildOfferContainer(screenWidth, screenHeight);
+    Widget destinationPage;
+    switch (widget.offer!.categoryTypeId) {
+      case 1:
+        destinationPage = HoroscopePage(showBundleQuestions: true);
+        break;
+      case 2:
+        destinationPage = CompatibilityPage2(showBundleQuestions: true);
+        break;
+      case 3:
+        destinationPage = AuspiciousTimePage(showBundleQuestions: true);
+        break;
+      default:
+        destinationPage = DashboardPage();
+        break;
     }
 
-  
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => destinationPage),
+    );
+  }
 
-  Widget _buildNoBundleContainer(double screenWidth, double screenHeight) {
+  Widget _buildNoBundleContainer(double screenWidth) {
     return Container(
       margin: EdgeInsets.all(screenWidth * 0.02),
       padding: EdgeInsets.all(screenWidth * 0.04),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(screenWidth * 0.02),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFFFF9933), // Orange border
-          width: 2.0, // Set border width
+          color: const Color(0xFFFF9933),
+          width: 1.5,
         ),
         color: Colors.white,
       ),
-      child: Center(
+      child: const Center(
         child: Text(
           'No bundles available at the moment',
           style: TextStyle(
-            fontSize: screenWidth * 0.05, // Responsive font size
             fontWeight: FontWeight.bold,
             color: Colors.red,
           ),
@@ -94,74 +84,76 @@ class _OfferWidgetState extends State<OfferWidget> {
 
   Widget _buildOfferContainer(double screenWidth, double screenHeight) {
     return Container(
-      margin: EdgeInsets.all(screenWidth * 0.02),
-      padding: EdgeInsets.all(screenWidth * 0.04),
+      margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.025, vertical: 6),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(screenWidth * 0.02),
-        border: Border.all(
-          color: const Color(0xFFFF9933), // Orange border
-          width: 1, // Set border width
-        ),
         color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with name and price
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-  child: Text(
-    widget.offer?.question ?? 'No Question Available',
-    style: TextStyle(
-      fontSize: screenWidth * 0.035,
-      fontWeight: FontWeight.bold,
-    ),
-    maxLines: null, // Allow unlimited lines
-    softWrap: true, // Enable text wrapping
-  ),
-),
+          // Image section (smaller height)
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+            child: widget.offer?.imageData != null
+                ? Image.memory(
+                    widget.offer!.imageData!,
+                    width: double.infinity,
+                    height: screenHeight * 0.15, // 👈 reduced height
+                    fit: BoxFit.cover,
+                  )
+                : Container(
+                    height: screenHeight * 0.13,
+                    color: Colors.grey.shade200,
+                    child: const Icon(Icons.image, color: Colors.grey),
+                  ),
+          ),
 
-              // Show the price and possibly the original price before discount
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
+          // Text content
+          Padding(
+            padding: EdgeInsets.all(screenWidth * 0.03),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.offer?.question ?? 'No Question Available',
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.035, // 👈 slightly smaller
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: screenHeight * 0.005),
+                Text(
+                  "Rs ${widget.offer?.price.toStringAsFixed(0) ?? '0'}",
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.04,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.redAccent,
+                  ),
+                ),
+                if (widget.offer?.priceBeforeDiscount != null)
                   Text(
-                    '\$${widget.offer?.price.toStringAsFixed(2) ?? '0.00'}',
+                    "Rs ${widget.offer!.priceBeforeDiscount.toStringAsFixed(0)}",
                     style: TextStyle(
-                      fontSize: screenWidth * 0.04,
-                      color: Colors.green,
+                      fontSize: screenWidth * 0.03,
+                      color: Colors.grey,
+                      decoration: TextDecoration.lineThrough,
                     ),
                   ),
-                  if (widget.offer?.priceBeforeDiscount != null)
-                    Text(
-                      '\$${widget.offer?.priceBeforeDiscount.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.03,
-                        color: Colors.red,
-                        decoration: TextDecoration.lineThrough,
-                      ),
-                    ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
-          SizedBox(height: screenHeight * 0.01),
-          // Image container for question image (assuming image is related to the offer)
-          widget.offer?.imageData != null
-              ? Image.memory(
-                  widget.offer!.imageData!,
-                  width: screenWidth * 0.98,
-                  height: screenHeight * 0.17,
-                  fit: BoxFit.cover,
-                )
-              : Placeholder(
-                  fallbackHeight: screenHeight * 0.17,
-                  fallbackWidth: screenWidth * 0.98,
-                ),
-          SizedBox(height: screenHeight * 0.01),
-          // Remove Auspicious Question, it's not required anymore
         ],
       ),
     );

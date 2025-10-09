@@ -13,7 +13,7 @@ class Offer {
   final double discountAmount;
   final bool isBundle;
   final String questionCategoryId;
-  final int? categoryTypeId; // 🔹 Make nullable
+  final int? categoryTypeId;
 
   Offer({
     required this.id,
@@ -27,36 +27,43 @@ class Offer {
     required this.discountAmount,
     required this.isBundle,
     required this.questionCategoryId,
-    this.categoryTypeId, // 🔹 Nullable to prevent crash
+    this.categoryTypeId,
   });
 
   factory Offer.fromJson(Map<String, dynamic> json) {
     return Offer(
-      id: json['_id'] ?? '', // Default empty string if null
+      id: json['_id'] ?? '',
       question: json['question'] ?? 'Unknown Question',
       imageBlob: json['image_blob'] ?? '',
-      effectiveFrom: DateTime.tryParse(json['effective_from'] ?? '') ?? DateTime(2000, 1, 1), // Safe parsing
+      effectiveFrom: DateTime.tryParse(json['effective_from'] ?? '') ?? DateTime(2000, 1, 1),
       effectiveTo: DateTime.tryParse(json['effective_to'] ?? '') ?? DateTime(2000, 1, 1),
       active: json['active'] ?? false,
-      price: (json['price'] ?? 0).toDouble(), // Default 0 if null
+      price: (json['price'] ?? 0).toDouble(),
       priceBeforeDiscount: (json['price_before_discount'] ?? 0).toDouble(),
       discountAmount: (json['discount_amount'] ?? 0).toDouble(),
       isBundle: json['is_bundle'] ?? false,
       questionCategoryId: json['question_category_id'] ?? '',
       categoryTypeId: json['category_type_id'] != null
-          ? json['category_type_id'] as int
-          : null, // 🔹 Handle null safely
+          ? int.tryParse(json['category_type_id'].toString())
+          : null,
     );
   }
 
-  // Convert Base64 string to Uint8List for image display
+  /// ✅ Safely converts Base64 or raw data URLs to bytes
   Uint8List? get imageData {
-    if (imageBlob != null && imageBlob!.isNotEmpty) {
-      // Remove data URL prefix if present
-      final regex = RegExp(r'data:image/[^;]+;base64,');
-      String cleaned = imageBlob!.replaceFirst(regex, '');
+    if (imageBlob == null || imageBlob!.isEmpty) return null;
+
+    try {
+      // Remove potential "data:image/png;base64," prefix if present
+      final cleaned = imageBlob!
+          .replaceAll(RegExp(r'data:image/[^;]+;base64,'), '')
+          .trim();
+
+      // Decode safely, even if padded or malformed slightly
       return base64Decode(cleaned);
+    } catch (e) {
+      print('⚠️ Error decoding image for offer $id: $e');
+      return null;
     }
-    return null;
   }
 }

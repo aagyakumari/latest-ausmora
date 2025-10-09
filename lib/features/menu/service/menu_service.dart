@@ -2,11 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/features/astrologers/ui/astrologer_page.dart';
 import 'package:flutter_application_1/features/auspicious_time/ui/auspicious_time_page.dart';
 import 'package:flutter_application_1/features/compatibility/ui/compatibility_page.dart';
+import 'package:flutter_application_1/features/dashboard/ui/dashboard_page.dart';
 import 'package:flutter_application_1/features/horoscope/ui/horoscope_page.dart';
+import 'package:flutter_application_1/features/mainlogo/ui/main_logo_page.dart';
 import 'package:flutter_application_1/features/profile/ui/profile_details.dart';
 import 'package:flutter_application_1/features/support/ui/support_page.dart';
 
 class MenuService {
+  static void navigateToDashboard(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const DashboardPage()),
+    );
+  }
+  static void navigateToMainLogo(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const MainLogoPage()),
+    );
+  }
+
   static void navigateToProfile(BuildContext context) {
     Navigator.push(
       context,

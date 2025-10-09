@@ -6,6 +6,13 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+// 🔹 Load your keystore configuration
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "com.example.flutter_application_1"
     compileSdk = flutter.compileSdkVersion
@@ -17,7 +24,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = "1.8" // Fixed syntax for JVM target
+        jvmTarget = "1.8"
     }
 
     defaultConfig {
@@ -28,25 +35,28 @@ android {
         versionName = flutter.versionName
     }
 
-    //  flavorDimensions "env"
-    // productFlavors {
-    //     dev {
-    //         dimension "env"
-    //         applicationIdSuffix ".dev"
-    //         versionNameSuffix "-dev"
-    //     }
-    //     prod {
-    //         dimension "env"
-    //         // no suffix for production
-    //     }
-    // }
-
+    // 🔹 Add signingConfigs block
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias keystoreProperties["keyAlias"]
+                keyPassword keystoreProperties["keyPassword"]
+                storeFile file(keystoreProperties["storeFile"])
+                storePassword keystoreProperties["storePassword"]
+            }
+        }
+    }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.debug // Replace this with your release signing config later
+            // 🔹 Use the real release signing config instead of debug
+            signingConfig = signingConfigs.release
+
             minifyEnabled false
             shrinkResources false
+
+            // Optional: If using ProGuard
+            // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
@@ -57,10 +67,8 @@ flutter {
 
 dependencies {
     implementation platform("com.google.firebase:firebase-bom:33.7.0") // Firebase BOM
-    implementation "com.google.firebase:firebase-analytics-ktx" // Example Firebase module
+    implementation "com.google.firebase:firebase-analytics-ktx"
     implementation "com.google.firebase:firebase-messaging-ktx"
-
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-     // ✅ Add this line
     implementation "com.google.android.material:material:1.9.0"
 }
