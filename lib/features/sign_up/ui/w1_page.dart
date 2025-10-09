@@ -107,7 +107,7 @@ class _W1PageState extends State<W1Page> with TickerProviderStateMixin {
                 heightFactor:
                     isTablet ? 1 : 0.95, // Different height for tablet/phone
                 child: Image.asset(
-                  'assets/images/osmora.png',
+                  'assets/images/Ausmora.png',
                   fit: BoxFit.contain, // Use 'contain' for better scaling
                 ),
               ),
