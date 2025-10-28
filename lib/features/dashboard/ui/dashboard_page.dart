@@ -196,12 +196,12 @@ class _DashboardState extends State<DashboardPage> {
                                               );
                                             },
                                             child: Text(
-                                              'View all offers',
+                                              'See More...',
                                               style: TextStyle(
-                                                fontSize: size.width * 0.035,
+                                                fontSize: size.width * 0.04,
                                                 fontFamily: 'Inter',
                                                 color: const Color(0xFFFF9933),
-                                                fontWeight: FontWeight.w400,
+                                                fontWeight: FontWeight.bold,
                                               ),
                                             ),
                                           ),

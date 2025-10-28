@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_application_1/constants.dart';
 import 'package:flutter_application_1/hive/hive_service.dart';
+import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 
 class UpdateProfileService {
@@ -37,6 +38,8 @@ class UpdateProfileService {
 
       // Check the response
       if (response.statusCode == 200) {
+        // After successful profile update, refresh the guest profile in Hive
+        await _refreshGuestProfile();
         // Handle successful response
         return true;
       } else {
@@ -47,6 +50,66 @@ class UpdateProfileService {
     } catch (e) {
       print('Exception: $e');
       return false;
+    }
+  }
+
+  // Helper method to fetch and update guest_profile in Hive
+  Future<void> _refreshGuestProfile() async {
+    try {
+      final box = Hive.box('settings');
+      String? token = await box.get('token');
+      String url = '$baseApiUrl/Guests/Get';
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var responseData = jsonDecode(response.body);
+        if (responseData['error_code'] == "0") {
+          var profileData = responseData['data']['item'];
+          var guestProfile = profileData['guest_profile'];
+
+          // Save guest_profile to Hive
+          await box.put('guest_profile', guestProfile);
+          print('Guest profile refreshed in Hive');
+        }
+      }
+    } catch (e) {
+      print('Error refreshing guest profile: $e');
+    }
+  }
+
+  // Static method to refresh guest profile (can be called from anywhere)
+  static Future<void> refreshGuestProfileInHive() async {
+    try {
+      final box = Hive.box('settings');
+      String? token = await box.get('token');
+      String url = '$baseApiUrl/Guests/Get';
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var responseData = jsonDecode(response.body);
+        if (responseData['error_code'] == "0") {
+          var profileData = responseData['data']['item'];
+          var guestProfile = profileData['guest_profile'];
+
+          // Save guest_profile to Hive
+          await box.put('guest_profile', guestProfile);
+          print('Guest profile refreshed in Hive');
+        }
+      }
+    } catch (e) {
+      print('Error refreshing guest profile: $e');
     }
   }
 }

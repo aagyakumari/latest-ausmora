@@ -9,6 +9,28 @@ import 'package:http/http.dart' as http;
 import 'package:hive/hive.dart';
 import 'package:flutter_application_1/features/inbox/ui/inbox_page.dart';
 
+// Custom PageRoute with no animation
+class NoAnimationMaterialPageRoute<T> extends MaterialPageRoute<T> {
+  NoAnimationMaterialPageRoute({
+    required WidgetBuilder builder,
+    RouteSettings? settings,
+  }) : super(
+          builder: builder,
+          settings: settings,
+        );
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    // Return child without any animation
+    return child;
+  }
+}
+
 class BottomNavBar extends StatefulWidget {
   final double screenWidth;
   final double screenHeight;
@@ -128,7 +150,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => InboxPage()),
+            NoAnimationMaterialPageRoute(builder: (context) => InboxPage()),
           );
         },
         behavior: HitTestBehavior.translucent,
@@ -202,7 +224,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => targetPage),
+            NoAnimationMaterialPageRoute(builder: (context) => targetPage),
           );
         },
         behavior: HitTestBehavior.translucent,
@@ -241,7 +263,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => AskQuestionPage()),
+                NoAnimationMaterialPageRoute(builder: (context) => AskQuestionPage()),
               );
             },
             child: Container(

@@ -3,6 +3,12 @@ import 'package:flutter_application_1/components/bottom_nav_bar.dart';
 import 'package:flutter_application_1/components/topnavbar.dart';
 import 'package:flutter_application_1/features/support/ui/support_page.dart';
 import 'package:flutter_application_1/features/menu/ui/menu_page.dart';
+import 'package:flutter_application_1/features/dashboard/ui/dashboard_page.dart';
+import 'package:flutter_application_1/constants.dart';
+import 'package:hive/hive.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class MainLogoPage extends StatefulWidget {
   const MainLogoPage({super.key});
@@ -14,6 +20,111 @@ class MainLogoPage extends StatefulWidget {
 class _MainLogoPageState extends State<MainLogoPage> {
   bool _isMenuOpen = false; // Track menu visibility
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  Timer? _profileCheckTimer;
+  bool _isCheckingProfile = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Check profile once on load, then periodically if not ready
+    _checkProfileOnInit();
+  }
+
+  @override
+  void dispose() {
+    _profileCheckTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _checkProfileOnInit() async {
+    final box = Hive.box('settings');
+    final existingProfile = await box.get('guest_profile');
+    
+    // If profile already exists in Hive, don't start checking
+    if (existingProfile != null) {
+      return;
+    }
+    
+    // First check immediately
+    await _checkAndNavigateIfProfileReady();
+    
+    // Then start periodic checking
+    _startProfileCheck();
+  }
+
+  void _startProfileCheck() {
+    // Check every 30 seconds if profile is generated
+    _profileCheckTimer = Timer.periodic(Duration(seconds: 30), (timer) {
+      if (!_isCheckingProfile) {
+        _checkAndNavigateIfProfileReady();
+      }
+    });
+  }
+
+  Future<void> _checkAndNavigateIfProfileReady() async {
+    if (_isCheckingProfile || !mounted) return;
+    
+    setState(() {
+      _isCheckingProfile = true;
+    });
+
+    try {
+      final box = Hive.box('settings');
+      
+      // Check Hive first - if profile exists, navigate immediately
+      final existingProfile = await box.get('guest_profile');
+      if (existingProfile != null) {
+        if (mounted) {
+          _profileCheckTimer?.cancel();
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => DashboardPage()),
+          );
+        }
+        return;
+      }
+      
+      // If not in Hive, fetch from API
+      String? token = await box.get('token');
+      String url = '$baseApiUrl/Guests/Get';
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        var responseData = jsonDecode(response.body);
+        if (responseData['error_code'] == "0") {
+          var profileData = responseData['data']['item'];
+          var guestProfile = profileData['guest_profile'];
+
+          if (guestProfile != null) {
+            // Profile is ready! Update Hive and navigate to dashboard
+            await box.put('guest_profile', guestProfile);
+            
+            if (mounted) {
+              _profileCheckTimer?.cancel();
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => DashboardPage()),
+              );
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print('Error checking profile: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCheckingProfile = false;
+        });
+      }
+    }
+  }
 
   void _openMenu() {
     setState(() {
